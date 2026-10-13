@@ -26,8 +26,7 @@ public class InMemoryFilmRepository implements SwapiFilmCreation, SwapiFilmFinda
 
     @Override
     public Optional<Film> findById(Integer id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findById'");
+        return Optional.ofNullable(map.get(id));
     }
 
 }

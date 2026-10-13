@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 
 import com.akr.swapi.domain.Episode;
 import com.akr.swapi.domain.Film;
+import com.akr.swapi.domain.FilmDetail;
 import com.akr.swapi.domain.FilmSummary;
 
 
@@ -15,6 +16,8 @@ public interface FilmMapper {
     FilmSummary toSummary(Film film);
 
     List<FilmSummary> toSummary(List<Film> films);
+
+    FilmDetail toDetail(Film film);
 
     default String map(Episode episode) {
         return episode == null ? null : episode.toString();

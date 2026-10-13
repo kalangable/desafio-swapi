@@ -21,4 +21,19 @@ class RomanNumeralTest {
         assertThrows(IllegalArgumentException.class, () -> RomanNumeral.toRoman(11));
     }
 
+    @Test
+    void shouldConvertRomanToIntIgnoringCase() {
+        for (int i = 1; i <= 10; i++) {
+            assertEquals(i, RomanNumeral.toInt(RomanNumeral.toRoman(i)));
+        }
+        assertEquals(4, RomanNumeral.toInt("iv"));
+    }
+
+    @Test
+    void shouldRejectInvalidRoman() {
+        assertThrows(IllegalArgumentException.class, () -> RomanNumeral.toInt("IIII"));
+        assertThrows(IllegalArgumentException.class, () -> RomanNumeral.toInt("abc"));
+        assertThrows(IllegalArgumentException.class, () -> RomanNumeral.toInt(null));
+    }
+
 }

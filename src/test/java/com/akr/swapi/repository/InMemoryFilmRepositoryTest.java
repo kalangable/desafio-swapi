@@ -1,6 +1,8 @@
 package com.akr.swapi.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Optional;
 
 import java.time.LocalDate;
 
@@ -17,6 +19,18 @@ class InMemoryFilmRepositoryTest {
     void shouldReturnInsertedFilm() {
         Film film = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl");
         assertEquals(film, repository.insert(film));
+    }
+
+    @Test
+    void shouldFindInsertedFilmByEpisodeNumber() {
+        Film film = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl");
+        repository.insert(film);
+        assertEquals(Optional.of(film), repository.findById(4));
+    }
+
+    @Test
+    void shouldReturnEmptyWhenEpisodeDoesNotExist() {
+        assertTrue(repository.findById(4).isEmpty());
     }
 
 }
