@@ -40,5 +40,4 @@ class FilmMapperTest {
         assertEquals(expected, mapper.toDetail(film));
     }
 
-
 }

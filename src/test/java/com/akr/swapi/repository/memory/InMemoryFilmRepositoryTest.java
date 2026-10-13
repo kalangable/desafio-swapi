@@ -48,4 +48,13 @@ class InMemoryFilmRepositoryTest {
         assertTrue(repository.findAll().isEmpty());
     }
 
+    @Test
+    void shouldReplaceFilmOnUpdate() {
+        repository.insert(new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl"));
+        Film updated = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "new crawl");
+
+        assertEquals(updated, repository.update(updated));
+        assertEquals(Optional.of(updated), repository.findById(4));
+    }
+
 }

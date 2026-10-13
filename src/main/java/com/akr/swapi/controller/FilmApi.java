@@ -46,4 +46,24 @@ public interface FilmApi {
                     @ExampleObject(name = "roman numeral", value = "IV") })
             String episode);
 
+    @Operation(summary = "Update part of a film",
+            description = "Changes only the fields informed in the body (title, releaseDate and description); "
+                    + "fields left out keep their current value. The film is identified by the episode in the URL, "
+                    + "as a number from 1 to 10 or a roman numeral from I to X, and its version is incremented.")
+    @ApiResponse(responseCode = "200", description = "Film updated",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = FilmDetail.class)))
+    @ApiResponse(responseCode = "400", description = "Episode is not a number from 1 to 10 nor a roman numeral from I to X",
+            content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "404", description = "Valid episode, but no film was loaded for it",
+            content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemDetail.class)))
+    FilmDetail update(
+            @Parameter(description = "Episode as a number or roman numeral", examples = {
+                    @ExampleObject(name = "number", value = "4"),
+                    @ExampleObject(name = "roman numeral", value = "IV") })
+            String episode,
+            FilmRequestUpdate request);
+
 }
