@@ -1,4 +1,4 @@
-package com.akr.films.service;
+package com.akr.films.source;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,26 +15,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.akr.films.config.SwapiProperties;
 
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
-class SwapiImportServiceTest {
+class HttpFetcherTest {
 
-    private final SwapiProperties properties = new SwapiProperties(
-            "http://localhost", "/films", Duration.ofMillis(100), 3, Duration.ofMillis(10));
+    private final HttpClientProperties properties = new HttpClientProperties(
+            Duration.ofMillis(100), 3, Duration.ofMillis(10));
+
+    private static final String URL = "http://localhost/films";
 
     private final AtomicInteger calls = new AtomicInteger();
 
     private WebClient webClient;
 
-    private SwapiImportService service;
+    private HttpFetcher service;
 
     @BeforeEach
     void setUp() {
         webClient = mock(WebClient.class, RETURNS_DEEP_STUBS);
-        service = new SwapiImportService(webClient, properties);
+        service = new HttpFetcher(properties);
     }
 
     @Test
@@ -44,7 +45,7 @@ class SwapiImportServiceTest {
             return Mono.just("ok");
         }));
 
-        assertThat(service.getData().block()).isEqualTo("ok");
+        assertThat(service.get(webClient, URL).block()).isEqualTo("ok");
         assertThat(calls).hasValue(1);
     }
 
@@ -54,7 +55,7 @@ class SwapiImportServiceTest {
                 ? Mono.error(new RuntimeException("Server error"))
                 : Mono.just("ok")));
 
-        assertThat(service.getData().block()).isEqualTo("ok");
+        assertThat(service.get(webClient, URL).block()).isEqualTo("ok");
         assertThat(calls).hasValue(3);
     }
 
@@ -65,7 +66,7 @@ class SwapiImportServiceTest {
             return Mono.error(new RuntimeException("Server error"));
         }));
 
-        assertThatThrownBy(() -> service.getData().block())
+        assertThatThrownBy(() -> service.get(webClient, URL).block())
                 .matches(Exceptions::isRetryExhausted)
                 .hasRootCauseMessage("Server error");
         assertThat(calls).hasValue(4); // 1 attempt + 3 retries
@@ -77,7 +78,7 @@ class SwapiImportServiceTest {
                 ? Mono.never()
                 : Mono.just("ok")));
 
-        assertThat(service.getData().block()).isEqualTo("ok");
+        assertThat(service.get(webClient, URL).block()).isEqualTo("ok");
         assertThat(calls).hasValue(2);
     }
 
@@ -88,14 +89,14 @@ class SwapiImportServiceTest {
             return Mono.never();
         }));
 
-        assertThatThrownBy(() -> service.getData().block())
+        assertThatThrownBy(() -> service.get(webClient, URL).block())
                 .matches(Exceptions::isRetryExhausted)
                 .hasRootCauseInstanceOf(TimeoutException.class);
         assertThat(calls).hasValue(4);
     }
 
     private void mockApiResponse(Mono<String> response) {
-        when(webClient.get().uri("/films").retrieve()
+        when(webClient.get().uri(URL).retrieve()
                 .onStatus(any(), any())
                 .onStatus(any(), any())
                 .bodyToMono(String.class))

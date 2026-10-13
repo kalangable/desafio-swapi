@@ -6,10 +6,9 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import com.akr.films.client.SwapiClient;
 import com.akr.films.domain.Film;
 import com.akr.films.repository.FilmCreation;
-import com.akr.films.service.SwapiImportService;
+import com.akr.films.source.FilmSource;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,17 +18,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j 
 public class FilmDataLoader implements ApplicationRunner {
 
-    private final SwapiImportService importService;
-    private final SwapiClient swapiClient;
+    private final List<FilmSource> sources;
     private final FilmCreation repository;
 
     @Override
     public void run(ApplicationArguments args) {
-        log.info("Start process to Import data from SWApi");
-        String json = importService.getData().block();
-        List<Film> films = swapiClient.process(json);
-        for (Film film : films) {
-            repository.insert(film);
+        for (FilmSource source : sources) {
+            try {
+                log.info("Start process to import data from {}", source.getClass().getSimpleName());
+                for (Film film : source.fetch()) {
+                    repository.insert(film);
+                }
+            } catch (RuntimeException e) {
+                log.error("Failed to import data from {}", source.getClass().getSimpleName(), e);
+            }
         }
     }
 

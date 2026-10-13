@@ -1,4 +1,4 @@
-package com.akr.films.client;
+package com.akr.films.source.swapi;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,34 +9,34 @@ import java.time.DateTimeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SwapiClientTest {
+class SwapiFilmParserTest {
 
-    private SwapiClient client;
+    private SwapiFilmParser parser;
 
     @BeforeEach
     void setUp() {
-        client = new SwapiClient();
+        parser = new SwapiFilmParser();
     }
 
     @Test
     void shouldProcessFilmsJsonWithoutErrors() throws IOException {
         String json = readFilmsJson();
 
-        assertDoesNotThrow(() -> client.process(json));
+        assertDoesNotThrow(() -> parser.parse(json));
     }
 
     @Test
     void shouldFailWhenReleaseDateIsInvalid() {
         String json = "{\"results\":[{\"title\":\"x\",\"episode_id\":1,\"release_date\":\"invalid\",\"opening_crawl\":\"\"}]}";
 
-        assertThrows(DateTimeException.class, () -> client.process(json));
+        assertThrows(DateTimeException.class, () -> parser.parse(json));
     }
 
     @Test
     void shouldFailWhenEpisodeIsOutOfRange() {
         String json = "{\"results\":[{\"title\":\"x\",\"episode_id\":11,\"release_date\":\"2000-01-01\",\"opening_crawl\":\"\"}]}";
 
-        assertThrows(IllegalArgumentException.class, () -> client.process(json));
+        assertThrows(IllegalArgumentException.class, () -> parser.parse(json));
     }
 
     private String readFilmsJson() throws IOException {

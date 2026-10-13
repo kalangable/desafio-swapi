@@ -1,4 +1,4 @@
-package com.akr.films.client;
+package com.akr.films.source.swapi;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,11 +15,11 @@ import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @Component
-public class SwapiClient {
+public class SwapiFilmParser {
 
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
-    public List<Film> process(String json) {
+    public List<Film> parse(String json) {
         List<Film> films = new ArrayList<>();
         for (JsonNode film : jsonMapper.readTree(json).path("results")) {
             String title = film.path("title").asString();
