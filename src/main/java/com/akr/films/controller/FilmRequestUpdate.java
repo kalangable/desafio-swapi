@@ -1,4 +1,4 @@
-package com.akr.swapi.controller;
+package com.akr.films.controller;
 
 import java.time.LocalDate;
 import java.util.Optional;

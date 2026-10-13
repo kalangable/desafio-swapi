@@ -1,14 +1,14 @@
-package com.akr.swapi.mapper;
+package com.akr.films.mapper;
 
 import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.domain.FilmDetail;
-import com.akr.swapi.domain.FilmSummary;
+import com.akr.films.domain.Episode;
+import com.akr.films.domain.Film;
+import com.akr.films.domain.FilmDetail;
+import com.akr.films.domain.FilmSummary;
 
 
 @Mapper(componentModel = "spring")

@@ -1,4 +1,4 @@
-package com.akr.swapi.repository.memory;
+package com.akr.films.repository.memory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,8 +8,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.domain.Film;
+import com.akr.films.domain.Episode;
+import com.akr.films.domain.Film;
 
 class InMemoryFilmRepositoryTest {
 

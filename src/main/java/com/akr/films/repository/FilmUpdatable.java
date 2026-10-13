@@ -1,7 +1,7 @@
-package com.akr.swapi.repository;
+package com.akr.films.repository;
 
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.repository.contract.Updatable;
+import com.akr.films.domain.Film;
+import com.akr.films.repository.contract.Updatable;
 
 public interface FilmUpdatable extends Updatable<Film>{
 

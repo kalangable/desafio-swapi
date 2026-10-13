@@ -1,4 +1,4 @@
-package com.akr.swapi.repository.contract;
+package com.akr.films.repository.contract;
 
 public interface Updatable<T> {
 

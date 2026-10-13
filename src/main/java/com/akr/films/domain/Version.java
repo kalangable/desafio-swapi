@@ -1,4 +1,4 @@
-package com.akr.swapi.domain;
+package com.akr.films.domain;
 
 public record Version(int version) {
 

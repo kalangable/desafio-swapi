@@ -1,4 +1,4 @@
-package com.akr.swapi.exception;
+package com.akr.films.exception;
 
 public class InvalidEpisodeException extends RuntimeException {
 

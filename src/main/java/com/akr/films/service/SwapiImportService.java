@@ -1,10 +1,10 @@
-package com.akr.swapi.service;
+package com.akr.films.service;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.akr.swapi.config.SwapiProperties;
+import com.akr.films.config.SwapiProperties;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;

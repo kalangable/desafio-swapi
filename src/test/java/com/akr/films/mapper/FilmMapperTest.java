@@ -1,4 +1,4 @@
-package com.akr.swapi.mapper;
+package com.akr.films.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -8,11 +8,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.domain.FilmDetail;
-import com.akr.swapi.domain.FilmSummary;
-import com.akr.swapi.domain.Version;
+import com.akr.films.domain.Episode;
+import com.akr.films.domain.Film;
+import com.akr.films.domain.FilmDetail;
+import com.akr.films.domain.FilmSummary;
+import com.akr.films.domain.Version;
 
 class FilmMapperTest {
 

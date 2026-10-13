@@ -1,4 +1,4 @@
-package com.akr.swapi.mapper;
+package com.akr.films.mapper;
 
 import java.util.Optional;
 

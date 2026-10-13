@@ -1,4 +1,4 @@
-package com.akr.swapi.service;
+package com.akr.films.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,17 +20,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.domain.FilmDetail;
-import com.akr.swapi.domain.FilmSummary;
-import com.akr.swapi.domain.Version;
-import com.akr.swapi.exception.FilmNotFoundException;
-import com.akr.swapi.exception.InvalidEpisodeException;
-import com.akr.swapi.mapper.FilmMapperImpl;
-import com.akr.swapi.mapper.FilmUpdateMapperImpl;
-import com.akr.swapi.repository.FilmFindable;
-import com.akr.swapi.repository.FilmUpdatable;
+import com.akr.films.domain.Episode;
+import com.akr.films.domain.Film;
+import com.akr.films.domain.FilmDetail;
+import com.akr.films.domain.FilmSummary;
+import com.akr.films.domain.Version;
+import com.akr.films.exception.FilmNotFoundException;
+import com.akr.films.exception.InvalidEpisodeException;
+import com.akr.films.mapper.FilmMapperImpl;
+import com.akr.films.mapper.FilmUpdateMapperImpl;
+import com.akr.films.repository.FilmFindable;
+import com.akr.films.repository.FilmUpdatable;
 
 @ExtendWith(MockitoExtension.class)
 class FilmServiceTest {

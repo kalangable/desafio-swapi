@@ -1,4 +1,4 @@
-package com.akr.swapi.mapper;
+package com.akr.films.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -6,9 +6,9 @@ import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.domain.Version;
+import com.akr.films.domain.Episode;
+import com.akr.films.domain.Film;
+import com.akr.films.domain.Version;
 
 class FilmUpdateMapperTest {
 

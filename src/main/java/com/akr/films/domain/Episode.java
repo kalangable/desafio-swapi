@@ -1,6 +1,6 @@
-package com.akr.swapi.domain;
+package com.akr.films.domain;
 
-import com.akr.swapi.util.RomanNumeral;
+import com.akr.films.util.RomanNumeral;
 
 public final class Episode {
 

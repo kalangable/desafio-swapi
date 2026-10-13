@@ -1,9 +1,9 @@
-package com.akr.swapi.util;
+package com.akr.films.util;
 
 import java.util.regex.Pattern;
 
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.exception.InvalidEpisodeException;
+import com.akr.films.domain.Episode;
+import com.akr.films.exception.InvalidEpisodeException;
 
 import lombok.experimental.UtilityClass;
 @UtilityClass 

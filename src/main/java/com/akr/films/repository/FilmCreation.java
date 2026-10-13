@@ -1,7 +1,7 @@
-package com.akr.swapi.repository;
+package com.akr.films.repository;
 
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.repository.contract.Creatable;
+import com.akr.films.domain.Film;
+import com.akr.films.repository.contract.Creatable;
 
 public interface FilmCreation extends Creatable<Film>{
 

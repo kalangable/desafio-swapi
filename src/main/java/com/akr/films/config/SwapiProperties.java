@@ -1,4 +1,4 @@
-package com.akr.swapi.config;
+package com.akr.films.config;
 
 import java.time.Duration;
 

@@ -1,4 +1,4 @@
-package com.akr.swapi;
+package com.akr.films;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

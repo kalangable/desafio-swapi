@@ -1,13 +1,13 @@
-package com.akr.swapi.mapper;
+package com.akr.films.mapper;
 
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.akr.swapi.controller.FilmRequestUpdate;
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.util.EpisodeParser;
+import com.akr.films.controller.FilmRequestUpdate;
+import com.akr.films.domain.Episode;
+import com.akr.films.domain.Film;
+import com.akr.films.util.EpisodeParser;
 
 @Mapper(componentModel = "spring", uses = OptionalUnwrapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface FilmRequestMapper {

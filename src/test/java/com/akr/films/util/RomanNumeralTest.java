@@ -1,4 +1,4 @@
-package com.akr.swapi.util;
+package com.akr.films.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

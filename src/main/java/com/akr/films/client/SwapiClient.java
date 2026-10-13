@@ -1,4 +1,4 @@
-package com.akr.swapi.client;
+package com.akr.films.client;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.domain.Film;
+import com.akr.films.domain.Episode;
+import com.akr.films.domain.Film;
 
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;

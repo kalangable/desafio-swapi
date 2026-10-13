@@ -1,4 +1,4 @@
-package com.akr.swapi.controller;
+package com.akr.films.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -19,15 +19,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.domain.FilmDetail;
-import com.akr.swapi.domain.FilmSummary;
-import com.akr.swapi.exception.ApiExceptionHandler;
-import com.akr.swapi.exception.FilmNotFoundException;
-import com.akr.swapi.exception.InvalidEpisodeException;
-import com.akr.swapi.mapper.FilmRequestMapperImpl;
-import com.akr.swapi.mapper.OptionalUnwrapperImpl;
-import com.akr.swapi.service.FilmService;
+import com.akr.films.domain.Film;
+import com.akr.films.domain.FilmDetail;
+import com.akr.films.domain.FilmSummary;
+import com.akr.films.exception.ApiExceptionHandler;
+import com.akr.films.exception.FilmNotFoundException;
+import com.akr.films.exception.InvalidEpisodeException;
+import com.akr.films.mapper.FilmRequestMapperImpl;
+import com.akr.films.mapper.OptionalUnwrapperImpl;
+import com.akr.films.service.FilmService;
 
 @ExtendWith(MockitoExtension.class)
 class FilmControllerTest {

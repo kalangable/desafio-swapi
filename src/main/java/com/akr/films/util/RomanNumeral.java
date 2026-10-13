@@ -1,4 +1,4 @@
-package com.akr.swapi.util;
+package com.akr.films.util;
 
 import java.util.HashMap;
 import java.util.Locale;

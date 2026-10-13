@@ -1,11 +1,11 @@
-package com.akr.swapi.mapper;
+package com.akr.films.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.akr.swapi.domain.Film;
+import com.akr.films.domain.Film;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface FilmUpdateMapper {

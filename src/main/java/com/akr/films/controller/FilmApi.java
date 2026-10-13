@@ -1,12 +1,12 @@
-package com.akr.swapi.controller;
+package com.akr.films.controller;
 
 import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 
-import com.akr.swapi.domain.FilmDetail;
-import com.akr.swapi.domain.FilmSummary;
+import com.akr.films.domain.FilmDetail;
+import com.akr.films.domain.FilmSummary;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

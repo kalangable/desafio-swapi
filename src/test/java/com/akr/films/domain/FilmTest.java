@@ -1,4 +1,4 @@
-package com.akr.swapi.domain;
+package com.akr.films.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

@@ -1,4 +1,4 @@
-package com.akr.swapi.config;
+package com.akr.films.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

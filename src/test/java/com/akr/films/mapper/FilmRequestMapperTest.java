@@ -1,4 +1,4 @@
-package com.akr.swapi.mapper;
+package com.akr.films.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -9,9 +9,9 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import com.akr.swapi.controller.FilmRequestUpdate;
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.exception.InvalidEpisodeException;
+import com.akr.films.controller.FilmRequestUpdate;
+import com.akr.films.domain.Film;
+import com.akr.films.exception.InvalidEpisodeException;
 
 class FilmRequestMapperTest {
 

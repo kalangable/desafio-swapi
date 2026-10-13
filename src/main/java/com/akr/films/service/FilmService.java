@@ -1,19 +1,19 @@
-package com.akr.swapi.service;
+package com.akr.films.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.akr.swapi.domain.Episode;
-import com.akr.swapi.domain.Film;
-import com.akr.swapi.domain.FilmDetail;
-import com.akr.swapi.domain.FilmSummary;
-import com.akr.swapi.exception.FilmNotFoundException;
-import com.akr.swapi.mapper.FilmMapper;
-import com.akr.swapi.mapper.FilmUpdateMapper;
-import com.akr.swapi.repository.FilmFindable;
-import com.akr.swapi.repository.FilmUpdatable;
-import com.akr.swapi.util.EpisodeParser;
+import com.akr.films.domain.Episode;
+import com.akr.films.domain.Film;
+import com.akr.films.domain.FilmDetail;
+import com.akr.films.domain.FilmSummary;
+import com.akr.films.exception.FilmNotFoundException;
+import com.akr.films.mapper.FilmMapper;
+import com.akr.films.mapper.FilmUpdateMapper;
+import com.akr.films.repository.FilmFindable;
+import com.akr.films.repository.FilmUpdatable;
+import com.akr.films.util.EpisodeParser;
 
 import lombok.RequiredArgsConstructor;
 

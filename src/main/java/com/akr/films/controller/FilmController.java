@@ -1,4 +1,4 @@
-package com.akr.swapi.controller;
+package com.akr.films.controller;
 
 import java.util.List;
 
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.akr.swapi.domain.FilmDetail;
-import com.akr.swapi.domain.FilmSummary;
-import com.akr.swapi.mapper.FilmRequestMapper;
-import com.akr.swapi.service.FilmService;
+import com.akr.films.domain.FilmDetail;
+import com.akr.films.domain.FilmSummary;
+import com.akr.films.mapper.FilmRequestMapper;
+import com.akr.films.service.FilmService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
