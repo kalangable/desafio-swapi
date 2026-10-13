@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.akr.swapi.domain.FilmDetail;
 import com.akr.swapi.domain.FilmSummary;
-import com.akr.swapi.service.SwapiFilmService;
+import com.akr.swapi.service.FilmService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/films")
 @Slf4j
 @RequiredArgsConstructor
-public class SwapiFilmController implements SwapiFilmApi {
+public class FilmController implements FilmApi {
 
-    private final SwapiFilmService service;
+    private final FilmService service;
 
     @Override
     @GetMapping

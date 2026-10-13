@@ -1,9 +1,9 @@
-package com.akr.swapi.repository;
+package com.akr.swapi.repository.contract;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface SwapiFindable<T, ID> {
+public interface Findable<T, ID> {
 
     List<T> findAll();
 

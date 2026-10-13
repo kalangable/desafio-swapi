@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Films", description = "Star Wars films imported from SWAPI")
-public interface SwapiFilmApi {
+public interface FilmApi {
 
     @Operation(summary = "List all films",
             description = "Returns the title and episode (roman numeral) of every loaded film. "

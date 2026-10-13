@@ -9,16 +9,16 @@ import com.akr.swapi.domain.FilmDetail;
 import com.akr.swapi.domain.FilmSummary;
 import com.akr.swapi.exception.FilmNotFoundException;
 import com.akr.swapi.mapper.FilmMapper;
-import com.akr.swapi.repository.SwapiFilmFindable;
+import com.akr.swapi.repository.FilmFindable;
 import com.akr.swapi.util.EpisodeParser;
 
 import lombok.RequiredArgsConstructor;
 
 @Service 
 @RequiredArgsConstructor 
-public class SwapiFilmService {
+public class FilmService {
 
-    private final SwapiFilmFindable repository;
+    private final FilmFindable repository;
     private final FilmMapper mapper;
 
     public List<FilmSummary> findAll(){

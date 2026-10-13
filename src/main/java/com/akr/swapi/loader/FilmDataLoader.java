@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.akr.swapi.client.SwapiClient;
 import com.akr.swapi.domain.Film;
-import com.akr.swapi.repository.SwapiFilmCreation;
+import com.akr.swapi.repository.FilmCreation;
 import com.akr.swapi.service.SwapiImportService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,11 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j 
-public class SwapiDataLoader implements ApplicationRunner {
+public class FilmDataLoader implements ApplicationRunner {
 
     private final SwapiImportService importService;
     private final SwapiClient swapiClient;
-    private final SwapiFilmCreation repository;
+    private final FilmCreation repository;
 
     @Override
     public void run(ApplicationArguments args) {

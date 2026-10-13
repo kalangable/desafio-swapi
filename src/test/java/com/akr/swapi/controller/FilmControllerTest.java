@@ -19,19 +19,19 @@ import com.akr.swapi.domain.FilmSummary;
 import com.akr.swapi.exception.ApiExceptionHandler;
 import com.akr.swapi.exception.FilmNotFoundException;
 import com.akr.swapi.exception.InvalidEpisodeException;
-import com.akr.swapi.service.SwapiFilmService;
+import com.akr.swapi.service.FilmService;
 
 @ExtendWith(MockitoExtension.class)
-class SwapiFilmControllerTest {
+class FilmControllerTest {
 
     @Mock
-    private SwapiFilmService service;
+    private FilmService service;
 
     private RestTestClient client;
 
     @BeforeEach
     void setUp() {
-        client = RestTestClient.bindToController(new SwapiFilmController(service))
+        client = RestTestClient.bindToController(new FilmController(service))
                 .configureServer(server -> server.setControllerAdvice(new ApiExceptionHandler()))
                 .build();
     }

@@ -1,4 +1,4 @@
-package com.akr.swapi.repository;
+package com.akr.swapi.repository.memory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

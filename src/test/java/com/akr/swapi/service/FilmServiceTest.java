@@ -25,19 +25,19 @@ import com.akr.swapi.domain.FilmSummary;
 import com.akr.swapi.exception.FilmNotFoundException;
 import com.akr.swapi.exception.InvalidEpisodeException;
 import com.akr.swapi.mapper.FilmMapperImpl;
-import com.akr.swapi.repository.SwapiFilmFindable;
+import com.akr.swapi.repository.FilmFindable;
 
 @ExtendWith(MockitoExtension.class)
-class SwapiFilmServiceTest {
+class FilmServiceTest {
 
     @Mock
-    private SwapiFilmFindable repository;
+    private FilmFindable repository;
 
-    private SwapiFilmService service;
+    private FilmService service;
 
     @BeforeEach
     void setUp() {
-        service = new SwapiFilmService(repository, new FilmMapperImpl());
+        service = new FilmService(repository, new FilmMapperImpl());
     }
 
     @Test
