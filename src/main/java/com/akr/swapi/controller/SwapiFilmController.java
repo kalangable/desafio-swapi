@@ -18,15 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/films")
 @Slf4j
 @RequiredArgsConstructor
-public class SwapiController {
+public class SwapiFilmController implements SwapiFilmApi {
 
     private final SwapiFilmService service;
 
+    @Override
     @GetMapping
     public List<FilmSummary> getAll() {
         return service.findAll();
     }
 
+    @Override
     @GetMapping("/{episode}")
     public FilmDetail getByEpisode(@PathVariable String episode) {
         return service.findByEpisode(episode);

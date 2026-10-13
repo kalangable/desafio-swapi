@@ -22,7 +22,7 @@ import com.akr.swapi.exception.InvalidEpisodeException;
 import com.akr.swapi.service.SwapiFilmService;
 
 @ExtendWith(MockitoExtension.class)
-class SwapiControllerTest {
+class SwapiFilmControllerTest {
 
     @Mock
     private SwapiFilmService service;
@@ -31,7 +31,7 @@ class SwapiControllerTest {
 
     @BeforeEach
     void setUp() {
-        client = RestTestClient.bindToController(new SwapiController(service))
+        client = RestTestClient.bindToController(new SwapiFilmController(service))
                 .configureServer(server -> server.setControllerAdvice(new ApiExceptionHandler()))
                 .build();
     }
