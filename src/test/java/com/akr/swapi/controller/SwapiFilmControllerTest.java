@@ -66,7 +66,7 @@ class SwapiFilmControllerTest {
     @Test
     void shouldReturnFilmDetailByNumber() {
         when(service.findByEpisode("4")).thenReturn(
-                new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "crawl"));
+                new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "crawl", "1"));
 
         client.get().uri("/films/4")
                 .exchange()
@@ -75,13 +75,14 @@ class SwapiFilmControllerTest {
                 .jsonPath("$.title").isEqualTo("A New Hope")
                 .jsonPath("$.episode").isEqualTo("IV")
                 .jsonPath("$.releaseDate").isEqualTo("1977-05-25")
-                .jsonPath("$.description").isEqualTo("crawl");
+                .jsonPath("$.description").isEqualTo("crawl")
+                .jsonPath("$.version").isEqualTo("1");
     }
 
     @Test
     void shouldPassRomanNumeralToService() {
         when(service.findByEpisode("IV")).thenReturn(
-                new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "crawl"));
+                new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "crawl", "1"));
 
         client.get().uri("/films/IV")
                 .exchange()
