@@ -1,16 +1,14 @@
 package com.akr.films.controller;
 
-import java.util.List;
-
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
+import com.akr.films.domain.PageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,12 +19,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public interface FilmApi {
 
     @Operation(summary = "List all films",
-            description = "Returns the id and the display title (for example, \"Episode IV - A New Hope\") "
-                    + "of every loaded film. The list is empty when no film has been loaded.")
-    @ApiResponse(responseCode = "200", description = "Films found (possibly none)",
+            description = "Returns one page with the id and the display title (for example, "
+                    + "\"Episode IV - A New Hope\") of the loaded films. A film never appears in more than one page. "
+                    + "The content is empty when there are no films or the page is past the last one.")
+    @ApiResponse(responseCode = "200", description = "Page of films (possibly empty)",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    array = @ArraySchema(schema = @Schema(implementation = FilmSummary.class))))
-    List<FilmSummary> getAll();
+                    schema = @Schema(implementation = PageResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Page is negative, or size is below 1 or above the maximum",
+            content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemDetail.class)))
+    PageResponse<FilmSummary> getAll(
+            @Parameter(description = "Page number, starting at 0 (see pagination.default-page)") Integer page,
+            @Parameter(description = "Films per page (see pagination.default-size and pagination.max-size)") Integer size);
 
     @Operation(summary = "Get the details of a film",
             description = "Finds a film by id. Synopsis, runtime and director are optional and may be null "

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -20,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import com.akr.films.domain.Identifier;
+import com.akr.films.domain.PageQuery;
+import com.akr.films.domain.PageResponse;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
@@ -39,7 +42,8 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        client = RestTestClient.bindToController(new FilmController(service, new FilmRequestMapperImpl(new OptionalUnwrapperImpl())))
+        client = RestTestClient.bindToController(new FilmController(service, new FilmRequestMapperImpl(new OptionalUnwrapperImpl()),
+                new PaginationProperties(0, 2, 100)))
                 .configureServer(server -> server.setControllerAdvice(new ApiExceptionHandler()))
                 .build();
     }
@@ -49,9 +53,14 @@ class FilmControllerTest {
                 null, "George Lucas", Map.of("openingCrawl", "crawl"), "swapi", version);
     }
 
+    private PageResponse<FilmSummary> page(PageQuery query, long total, FilmSummary... films) {
+        return PageResponse.of(List.of(films), query, total);
+    }
+
     @Test
-    void shouldListAllFilms() {
-        when(service.findAll()).thenReturn(List.of(
+    void shouldListTheDefaultPageWhenNoParameterIsInformed() {
+        PageQuery query = new PageQuery(0, 2);
+        when(service.findAll(query)).thenReturn(page(query, 3,
                 new FilmSummary("1", "Episode IV - A New Hope"),
                 new FilmSummary("2", "Episode V - The Empire Strikes Back")));
 
@@ -59,21 +68,54 @@ class FilmControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(2)
-                .jsonPath("$[0].id").isEqualTo("1")
-                .jsonPath("$[0].displayTitle").isEqualTo("Episode IV - A New Hope")
-                .jsonPath("$[1].displayTitle").isEqualTo("Episode V - The Empire Strikes Back");
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.content[0].id").isEqualTo("1")
+                .jsonPath("$.content[0].displayTitle").isEqualTo("Episode IV - A New Hope")
+                .jsonPath("$.content[1].displayTitle").isEqualTo("Episode V - The Empire Strikes Back")
+                .jsonPath("$.page.size").isEqualTo(2)
+                .jsonPath("$.page.number").isEqualTo(0)
+                .jsonPath("$.page.totalElements").isEqualTo(3)
+                .jsonPath("$.page.totalPages").isEqualTo(2);
     }
 
     @Test
-    void shouldReturnEmptyListWhenThereAreNoFilms() {
-        when(service.findAll()).thenReturn(List.of());
+    void shouldPassTheInformedPageAndSizeToTheService() {
+        PageQuery query = new PageQuery(2, 5);
+        when(service.findAll(query)).thenReturn(page(query, 11, new FilmSummary("11", "Heat")));
+
+        client.get().uri("/films?page=2&size=5")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.page.number").isEqualTo(2)
+                .jsonPath("$.page.size").isEqualTo(5);
+        verify(service).findAll(query);
+    }
+
+    @Test
+    void shouldReturnEmptyContentWhenThereAreNoFilms() {
+        PageQuery query = new PageQuery(0, 2);
+        when(service.findAll(query)).thenReturn(page(query, 0));
 
         client.get().uri("/films")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(0);
+                .jsonPath("$.content.length()").isEqualTo(0)
+                .jsonPath("$.page.totalElements").isEqualTo(0);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenThePaginationIsInvalid() {
+        for (String query : List.of("page=-1", "size=0", "size=101")) {
+            client.get().uri("/films?" + query)
+                    .exchange()
+                    .expectStatus().isBadRequest()
+                    .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+                    .expectBody()
+                    .jsonPath("$.status").isEqualTo(400);
+        }
+        verifyNoInteractions(service);
     }
 
     @Test

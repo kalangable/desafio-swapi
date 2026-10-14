@@ -1,11 +1,12 @@
 package com.akr.films.repository.contract;
 
-import java.util.List;
+import com.akr.films.domain.PageQuery;
+import com.akr.films.domain.PageResponse;
 import java.util.Optional;
 
 public interface Findable<T, ID> {
 
-    List<T> findAll();
+    PageResponse<T> findAll(PageQuery query);
 
     Optional<T> findById(ID id);
 

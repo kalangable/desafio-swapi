@@ -4,12 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 import com.akr.films.domain.Film;
 import com.akr.films.domain.Identifier;
+import com.akr.films.domain.PageInfo;
+import com.akr.films.domain.PageQuery;
+import com.akr.films.domain.PageResponse;
 
 class InMemoryFilmRepositoryTest {
 
@@ -40,20 +46,69 @@ class InMemoryFilmRepositoryTest {
         assertTrue(repository.findById(new Identifier("missing")).isEmpty());
     }
 
-    @Test
-    void shouldFindAllInsertedFilms() {
-        Film newHope = repository.insert(newHope().build());
-        Film empire = repository.insert(
-                Film.builder().id(new Identifier("star-wars-2")).title("The Empire Strikes Back").build());
+    private void insertFilms(int count) {
+        for (int i = 1; i <= count; i++) {
+            repository.insert(Film.builder().id(new Identifier("star-wars-" + i)).title("Film " + i).build());
+        }
+    }
 
-        assertEquals(2, repository.findAll().size());
-        assertTrue(repository.findAll().contains(newHope));
-        assertTrue(repository.findAll().contains(empire));
+    private List<String> ids(PageResponse<Film> page) {
+        return page.content().stream().map(film -> film.getId().value()).toList();
     }
 
     @Test
-    void shouldReturnEmptyListWhenThereAreNoFilms() {
-        assertTrue(repository.findAll().isEmpty());
+    void shouldReturnTheRequestedPage() {
+        insertFilms(5);
+
+        PageResponse<Film> page = repository.findAll(new PageQuery(1, 2));
+
+        assertEquals(2, page.content().size());
+        assertEquals(new PageInfo(2, 1, 5, 3), page.page());
+    }
+
+    @Test
+    void shouldNotRepeatFilmsAcrossPages() {
+        insertFilms(5);
+
+        List<String> all = new ArrayList<>();
+        for (int page = 0; page < 3; page++) {
+            all.addAll(ids(repository.findAll(new PageQuery(page, 2))));
+        }
+
+        assertEquals(5, all.size());
+        assertEquals(5, new HashSet<>(all).size());
+    }
+
+    @Test
+    void shouldReturnTheSameFilmsWhenThePageIsRequestedAgain() {
+        insertFilms(5);
+
+        assertEquals(ids(repository.findAll(new PageQuery(1, 2))), ids(repository.findAll(new PageQuery(1, 2))));
+    }
+
+    @Test
+    void shouldReturnTheRemainingFilmsInTheLastPage() {
+        insertFilms(5);
+
+        assertEquals(1, repository.findAll(new PageQuery(2, 2)).content().size());
+    }
+
+    @Test
+    void shouldReturnEmptyContentWhenThePageIsPastTheLastOne() {
+        insertFilms(3);
+
+        PageResponse<Film> page = repository.findAll(new PageQuery(5, 2));
+
+        assertTrue(page.content().isEmpty());
+        assertEquals(new PageInfo(2, 5, 3, 2), page.page());
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenThereAreNoFilms() {
+        PageResponse<Film> page = repository.findAll(new PageQuery(0, 2));
+
+        assertTrue(page.content().isEmpty());
+        assertEquals(new PageInfo(2, 0, 0, 0), page.page());
     }
 
     @Test

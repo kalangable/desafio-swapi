@@ -1,18 +1,18 @@
 package com.akr.films.controller;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
 import com.akr.films.domain.Identifier;
+import com.akr.films.domain.PageResponse;
 import com.akr.films.mapper.FilmRequestMapper;
 import com.akr.films.service.FilmService;
 
@@ -27,11 +27,13 @@ public class FilmController implements FilmApi {
 
     private final FilmService service;
     private final FilmRequestMapper requestMapper;
+    private final PaginationProperties pagination;
 
     @Override
     @GetMapping
-    public List<FilmSummary> getAll() {
-        return service.findAll();
+    public PageResponse<FilmSummary> getAll(@RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        return service.findAll(pagination.resolve(page, size));
     }
 
     @Override

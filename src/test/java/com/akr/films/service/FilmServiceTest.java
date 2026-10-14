@@ -22,6 +22,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.akr.films.domain.Identifier;
+import com.akr.films.domain.PageInfo;
+import com.akr.films.domain.PageQuery;
+import com.akr.films.domain.PageResponse;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
@@ -63,19 +66,25 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldFindAllAsSummaries() {
-        when(repository.findAll()).thenReturn(List.of(newHope(), Film.builder().id(new Identifier("2")).title("Heat").build()));
+    void shouldFindAPageAsSummaries() {
+        PageQuery query = new PageQuery(0, 2);
+        List<Film> films = List.of(newHope(), Film.builder().id(new Identifier("2")).title("Heat").build());
+        when(repository.findAll(query)).thenReturn(PageResponse.of(films, query, 5));
+
+        PageResponse<FilmSummary> page = service.findAll(query);
 
         assertEquals(List.of(
                 new FilmSummary("1", "Episode IV - A New Hope"),
-                new FilmSummary("2", "Heat")), service.findAll());
+                new FilmSummary("2", "Heat")), page.content());
+        assertEquals(new PageInfo(2, 0, 5, 3), page.page());
     }
 
     @Test
-    void shouldReturnEmptyListWhenThereIsNoData() {
-        when(repository.findAll()).thenReturn(List.of());
+    void shouldReturnEmptyPageWhenThereIsNoData() {
+        PageQuery query = new PageQuery(0, 2);
+        when(repository.findAll(query)).thenReturn(PageResponse.of(List.of(), query, 0));
 
-        assertTrue(assertDoesNotThrow(() -> service.findAll()).isEmpty());
+        assertTrue(assertDoesNotThrow(() -> service.findAll(query)).content().isEmpty());
     }
 
     @Test

@@ -3,7 +3,6 @@ package com.akr.films.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -35,15 +34,6 @@ class FilmMapperTest {
     @Test
     void shouldMapSummaryUsingIdAndDisplayTitle() {
         assertEquals(new FilmSummary("1", "Episode IV - A New Hope"), mapper.toSummary(film));
-    }
-
-    @Test
-    void shouldMapAllFilmsToSummaries() {
-        Film other = Film.builder().id(new Identifier("2")).title("Heat").build();
-
-        List<FilmSummary> summaries = mapper.toSummary(List.of(film, other));
-
-        assertEquals(List.of(new FilmSummary("1", "Episode IV - A New Hope"), new FilmSummary("2", "Heat")), summaries);
     }
 
     @Test

@@ -1,13 +1,13 @@
 package com.akr.films.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
 import com.akr.films.domain.Identifier;
+import com.akr.films.domain.PageQuery;
+import com.akr.films.domain.PageResponse;
 import com.akr.films.exception.FilmNotFoundException;
 import com.akr.films.mapper.FilmMapper;
 import com.akr.films.mapper.FilmUpdateMapper;
@@ -25,8 +25,8 @@ public class FilmService {
     private final FilmMapper mapper;
     private final FilmUpdateMapper updateMapper;
 
-    public List<FilmSummary> findAll() {
-        return mapper.toSummary(finder.findAll());
+    public PageResponse<FilmSummary> findAll(PageQuery query) {
+        return finder.findAll(query).map(mapper::toSummary);
     }
 
     public FilmDetail findById(Identifier id) {

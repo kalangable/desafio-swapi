@@ -73,20 +73,46 @@ Cada fonte devolve `List<Film>` já preenchida com o que a sua API oferece:
 - `title`, `releaseDate` e, se existirem, `synopsis`, `runtimeMinutes` e `director`;
 - `label`: rótulo opcional usado no nome de apresentação (na SWAPI, "Episode IV");
 - `extras`: `Map<String, String>` com dados específicos da fonte (na SWAPI, `openingCrawl` e `producer`);
-- `source` e `externalId`: de onde o filme veio e o seu identificador lá.
+- `source` e `externalId`: de onde o filme veio e o seu identificador lá;
+- `id` (`Identifier`): definido pela própria fonte, no parser (na SWAPI, `star-wars-4` para o episódio IV).
 
-O `id` do filme é gerado (UUID) ao inserir no repositório.
+Ao carregar, o `FilmDataLoader` não insere filme sem `id` nem com `id` já existente: ele é pulado, a carga segue e o problema aparece como `WARN` no log ao final da fonte.
 
 ## Endpoints
 
 | Método | Path | Descrição |
 |---|---|---|
-| GET | `/films` | Lista `id` e `displayTitle` (ex.: "Episode IV - A New Hope") |
+| GET | `/films?page=&size=` | Lista paginada com `id` e `displayTitle` (ex.: "Episode IV - A New Hope") |
 | GET | `/films/{id}` | Detalhe do filme, incluindo `extras` |
 | PATCH | `/films/{id}` | Altera `title`, `releaseDate`, `synopsis`, `runtimeMinutes` e `director` |
 
 O `displayTitle` é derivado: `label - title` quando há `label`, senão só o `title`.
 A documentação interativa fica em `/swagger-ui.html`.
+
+### Paginação
+
+`GET /films` devolve uma página no formato:
+
+```json
+{
+  "content": [
+    { "id": "star-wars-1", "displayTitle": "Episode IV - A New Hope" },
+    { "id": "star-wars-2", "displayTitle": "Episode V - The Empire Strikes Back" }
+  ],
+  "page": { "size": 2, "number": 0, "totalElements": 6, "totalPages": 3 }
+}
+```
+
+- `page` começa em 0 e `size` é a quantidade de filmes por página. Um filme nunca aparece em mais de uma página.
+- Uma página depois da última devolve `content` vazio.
+- `page` negativo, `size` menor que 1 ou acima do máximo devolve 400.
+- Os valores padrão ficam no `application.properties`:
+
+```properties
+pagination.default-page=0
+pagination.default-size=2
+pagination.max-size=100
+```
 
 ### Adicionando uma nova fonte
 
