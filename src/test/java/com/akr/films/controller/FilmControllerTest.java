@@ -4,11 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,6 @@ import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
 import com.akr.films.exception.ApiExceptionHandler;
 import com.akr.films.exception.FilmNotFoundException;
-import com.akr.films.exception.InvalidEpisodeException;
 import com.akr.films.mapper.FilmRequestMapperImpl;
 import com.akr.films.mapper.OptionalUnwrapperImpl;
 import com.akr.films.service.FilmService;
@@ -44,20 +43,25 @@ class FilmControllerTest {
                 .build();
     }
 
+    private FilmDetail newHope(String synopsis, String version) {
+        return new FilmDetail("1", "A New Hope", "Episode IV - A New Hope", LocalDate.of(1977, 5, 25), synopsis,
+                null, "George Lucas", Map.of("openingCrawl", "crawl"), "swapi", version);
+    }
+
     @Test
     void shouldListAllFilms() {
         when(service.findAll()).thenReturn(List.of(
-                new FilmSummary("A New Hope", "IV"),
-                new FilmSummary("The Empire Strikes Back", "V")));
+                new FilmSummary("1", "Episode IV - A New Hope"),
+                new FilmSummary("2", "Episode V - The Empire Strikes Back")));
 
         client.get().uri("/films")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(2)
-                .jsonPath("$[0].title").isEqualTo("A New Hope")
-                .jsonPath("$[0].episode").isEqualTo("IV")
-                .jsonPath("$[1].episode").isEqualTo("V");
+                .jsonPath("$[0].id").isEqualTo("1")
+                .jsonPath("$[0].displayTitle").isEqualTo("Episode IV - A New Hope")
+                .jsonPath("$[1].displayTitle").isEqualTo("Episode V - The Empire Strikes Back");
     }
 
     @Test
@@ -72,113 +76,74 @@ class FilmControllerTest {
     }
 
     @Test
-    void shouldReturnFilmDetailByNumber() {
-        when(service.findByEpisode("4")).thenReturn(
-                new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "crawl", "1"));
+    void shouldReturnFilmDetailById() {
+        when(service.findById("1")).thenReturn(newHope(null, "1"));
 
-        client.get().uri("/films/4")
+        client.get().uri("/films/1")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
+                .jsonPath("$.id").isEqualTo("1")
                 .jsonPath("$.title").isEqualTo("A New Hope")
-                .jsonPath("$.episode").isEqualTo("IV")
+                .jsonPath("$.displayTitle").isEqualTo("Episode IV - A New Hope")
                 .jsonPath("$.releaseDate").isEqualTo("1977-05-25")
-                .jsonPath("$.description").isEqualTo("crawl")
+                .jsonPath("$.director").isEqualTo("George Lucas")
+                .jsonPath("$.extras.openingCrawl").isEqualTo("crawl")
+                .jsonPath("$.source").isEqualTo("swapi")
                 .jsonPath("$.version").isEqualTo("1");
     }
 
     @Test
-    void shouldPassRomanNumeralToService() {
-        when(service.findByEpisode("IV")).thenReturn(
-                new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "crawl", "1"));
-
-        client.get().uri("/films/IV")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.episode").isEqualTo("IV");
-        verify(service).findByEpisode("IV");
-    }
-
-    @Test
-    void shouldReturnBadRequestProblemDetailForInvalidEpisode() {
-        when(service.findByEpisode("abc")).thenThrow(new InvalidEpisodeException("abc"));
-
-        client.get().uri("/films/abc")
-                .exchange()
-                .expectStatus().isBadRequest()
-                .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(400)
-                .jsonPath("$.detail").isEqualTo("Invalid episode: abc");
-    }
-
-    @Test
     void shouldReturnNotFoundProblemDetailWhenFilmDoesNotExist() {
-        when(service.findByEpisode("5")).thenThrow(new FilmNotFoundException("V"));
+        when(service.findById("x")).thenThrow(new FilmNotFoundException("x"));
 
-        client.get().uri("/films/5")
+        client.get().uri("/films/x")
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404)
-                .jsonPath("$.detail").isEqualTo("Film not found for episode: V");
+                .jsonPath("$.detail").isEqualTo("Film not found: x");
     }
 
     @Test
     void shouldUpdateOnlyTheInformedFields() {
-        when(service.update(any(Film.class))).thenReturn(
-                new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "new crawl", "2"));
+        when(service.update(any(Film.class))).thenReturn(newHope("new synopsis", "2"));
 
-        client.patch().uri("/films/IV")
+        client.patch().uri("/films/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("""
-                        {"description":"new crawl"}
+                        {"synopsis":"new synopsis","runtimeMinutes":121}
                         """)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.description").isEqualTo("new crawl")
+                .jsonPath("$.synopsis").isEqualTo("new synopsis")
                 .jsonPath("$.version").isEqualTo("2");
 
         ArgumentCaptor<Film> sent = ArgumentCaptor.forClass(Film.class);
         verify(service).update(sent.capture());
-        assertEquals(4, sent.getValue().getEpisode().toInt());
-        assertEquals("new crawl", sent.getValue().getDescription());
+        assertEquals("1", sent.getValue().getId());
+        assertEquals("new synopsis", sent.getValue().getSynopsis());
+        assertEquals(121, sent.getValue().getRuntimeMinutes());
         assertNull(sent.getValue().getTitle());
         assertNull(sent.getValue().getReleaseDate());
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenUpdatingWithInvalidEpisode() {
-        client.patch().uri("/films/abc")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("""
-                        {"description":"crawl"}
-                        """)
-                .exchange()
-                .expectStatus().isBadRequest()
-                .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
-                .expectBody()
-                .jsonPath("$.detail").isEqualTo("Invalid episode: abc");
-
-        verifyNoInteractions(service);
+        assertNull(sent.getValue().getDirector());
     }
 
     @Test
     void shouldReturnNotFoundWhenUpdatingFilmThatIsNotLoaded() {
-        when(service.update(any(Film.class))).thenThrow(new FilmNotFoundException("V"));
+        when(service.update(any(Film.class))).thenThrow(new FilmNotFoundException("x"));
 
-        client.patch().uri("/films/5")
+        client.patch().uri("/films/x")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("""
-                        {"description":"crawl"}
+                        {"synopsis":"synopsis"}
                         """)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.detail").isEqualTo("Film not found for episode: V");
+                .jsonPath("$.detail").isEqualTo("Film not found: x");
     }
 
 }

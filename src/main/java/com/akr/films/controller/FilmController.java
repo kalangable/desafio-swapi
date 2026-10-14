@@ -34,15 +34,15 @@ public class FilmController implements FilmApi {
     }
 
     @Override
-    @GetMapping("/{episode}")
-    public FilmDetail getByEpisode(@PathVariable String episode) {
-        return service.findByEpisode(episode);
+    @GetMapping("/{id}")
+    public FilmDetail getById(@PathVariable String id) {
+        return service.findById(id);
     }
 
     @Override
-    @PatchMapping("/{episode}")
-    public FilmDetail update(@PathVariable String episode, @RequestBody FilmRequestUpdate request) {
-        var filmMapped = requestMapper.toFilm(episode, request);
+    @PatchMapping("/{id}")
+    public FilmDetail update(@PathVariable String id, @RequestBody FilmRequestUpdate request) {
+        var filmMapped = requestMapper.toFilm(id, request);
         return service.update(filmMapped);
     }
 }

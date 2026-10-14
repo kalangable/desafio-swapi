@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,13 +21,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.akr.films.domain.Episode;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
 import com.akr.films.domain.Version;
 import com.akr.films.exception.FilmNotFoundException;
-import com.akr.films.exception.InvalidEpisodeException;
 import com.akr.films.mapper.FilmMapperImpl;
 import com.akr.films.mapper.FilmUpdateMapperImpl;
 import com.akr.films.repository.FilmFindable;
@@ -49,15 +48,26 @@ class FilmServiceTest {
                 new FilmUpdateMapperImpl());
     }
 
+    private Film newHope() {
+        return Film.builder()
+                .id("1")
+                .title("A New Hope")
+                .label("Episode IV")
+                .releaseDate(LocalDate.of(1977, 5, 25))
+                .synopsis("synopsis")
+                .extras(Map.of("openingCrawl", "crawl"))
+                .source("swapi")
+                .version(new Version(1))
+                .build();
+    }
+
     @Test
     void shouldFindAllAsSummaries() {
-        when(repository.findAll()).thenReturn(List.of(
-                new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl"),
-                new Film("The Empire Strikes Back", new Episode(5), LocalDate.of(1980, 5, 17), "crawl")));
+        when(repository.findAll()).thenReturn(List.of(newHope(), Film.builder().id("2").title("Heat").build()));
 
         assertEquals(List.of(
-                new FilmSummary("A New Hope", "IV"),
-                new FilmSummary("The Empire Strikes Back", "V")), service.findAll());
+                new FilmSummary("1", "Episode IV - A New Hope"),
+                new FilmSummary("2", "Heat")), service.findAll());
     }
 
     @Test
@@ -68,59 +78,64 @@ class FilmServiceTest {
     }
 
     @Test
-    void shouldFindByNumberOrRoman() {
-        Film film = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl");
-        when(repository.findById(4)).thenReturn(Optional.of(film));
+    void shouldFindById() {
+        when(repository.findById("1")).thenReturn(Optional.of(newHope()));
 
-        assertEquals("A New Hope", service.findByEpisode("4").title());
-        assertEquals("A New Hope", service.findByEpisode("IV").title());
-        assertEquals("A New Hope", service.findByEpisode("iv").title());
-        verify(repository, times(3)).findById(4);
+        FilmDetail detail = service.findById("1");
+
+        assertEquals("A New Hope", detail.title());
+        assertEquals("Episode IV - A New Hope", detail.displayTitle());
+        assertEquals(Map.of("openingCrawl", "crawl"), detail.extras());
     }
 
     @Test
-    void shouldFailWhenEpisodeIsValidButNotLoaded() {
-        when(repository.findById(5)).thenReturn(Optional.empty());
+    void shouldFailWhenIdIsNotLoaded() {
+        when(repository.findById("x")).thenReturn(Optional.empty());
 
-        assertThrows(FilmNotFoundException.class, () -> service.findByEpisode("5"));
-    }
-
-    @Test
-    void shouldFailWithoutQueryingWhenEpisodeIsInvalid() {
-        assertThrows(InvalidEpisodeException.class, () -> service.findByEpisode("abc"));
-        verifyNoInteractions(repository);
+        assertThrows(FilmNotFoundException.class, () -> service.findById("x"));
     }
 
     @Test
     void shouldChangeOnlyInformedFieldsAndIncrementTheVersion() {
-        Film current = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl", new Version(1));
-        Film changes = new Film(null, new Episode(4), null, "new crawl", null);
-        when(repository.findById(4)).thenReturn(Optional.of(current));
+        Film current = newHope();
+        Film changes = Film.builder().id("1").synopsis("new synopsis").runtimeMinutes(121).build();
+        when(repository.findById("1")).thenReturn(Optional.of(current));
         when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         FilmDetail detail = service.update(changes);
 
-        assertEquals(new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "new crawl", "2"), detail);
+        assertEquals("A New Hope", detail.title());
+        assertEquals("Episode IV - A New Hope", detail.displayTitle());
+        assertEquals("new synopsis", detail.synopsis());
+        assertEquals(121, detail.runtimeMinutes());
+        assertEquals("2", detail.version());
+    }
+
+    @Test
+    void shouldKeepTheLabelWhenTheTitleChanges() {
+        when(repository.findById("1")).thenReturn(Optional.of(newHope()));
+        when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        FilmDetail detail = service.update(Film.builder().id("1").title("A Good Hope").build());
+
+        assertEquals("Episode IV - A Good Hope", detail.displayTitle());
     }
 
     @Test
     void shouldNotSaveNorIncrementTheVersionWhenNothingChanges() {
-        Film current = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl", new Version(1));
-        Film changes = new Film("A New Hope", new Episode(4), null, null, null);
-        when(repository.findById(4)).thenReturn(Optional.of(current));
+        when(repository.findById("1")).thenReturn(Optional.of(newHope()));
 
-        FilmDetail detail = service.update(changes);
+        FilmDetail detail = service.update(Film.builder().id("1").title("A New Hope").build());
 
-        assertEquals(new FilmDetail("A New Hope", "IV", LocalDate.of(1977, 5, 25), "crawl", "1"), detail);
+        assertEquals("1", detail.version());
         verifyNoInteractions(updater);
     }
 
     @Test
     void shouldNotIncrementTheVersionWhenNoFieldIsInformed() {
-        Film current = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl", new Version(1));
-        when(repository.findById(4)).thenReturn(Optional.of(current));
+        when(repository.findById("1")).thenReturn(Optional.of(newHope()));
 
-        FilmDetail detail = service.update(new Film(null, new Episode(4), null, null, null));
+        FilmDetail detail = service.update(Film.builder().id("1").build());
 
         assertEquals("1", detail.version());
         verifyNoInteractions(updater);
@@ -128,9 +143,9 @@ class FilmServiceTest {
 
     @Test
     void shouldSaveOnlyOnceWhenTheSameChangeIsSentRepeatedly() {
-        Film current = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl", new Version(1));
-        Film changes = new Film("A Good Hope", new Episode(4), null, null, null);
-        when(repository.findById(4)).thenReturn(Optional.of(current));
+        Film current = newHope();
+        Film changes = Film.builder().id("1").title("A Good Hope").build();
+        when(repository.findById("1")).thenReturn(Optional.of(current));
         when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         service.update(changes);
@@ -144,8 +159,8 @@ class FilmServiceTest {
 
     @Test
     void shouldFailUpdateWithoutUpdatingWhenFilmIsNotLoaded() {
-        Film changes = new Film(null, new Episode(5), null, "crawl", null);
-        when(repository.findById(5)).thenReturn(Optional.empty());
+        Film changes = Film.builder().id("x").synopsis("synopsis").build();
+        when(repository.findById("x")).thenReturn(Optional.empty());
 
         assertThrows(FilmNotFoundException.class, () -> service.update(changes));
         verifyNoInteractions(updater);

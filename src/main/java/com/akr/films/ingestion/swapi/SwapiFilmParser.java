@@ -2,12 +2,14 @@ package com.akr.films.ingestion.swapi;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.akr.films.domain.Episode;
 import com.akr.films.domain.Film;
+import com.akr.films.util.RomanNumeral;
 
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
@@ -17,19 +19,28 @@ import tools.jackson.databind.json.JsonMapper;
 @Component
 public class SwapiFilmParser {
 
+    private static final String SOURCE = "swapi";
+
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
     public List<Film> parse(String json) {
         List<Film> films = new ArrayList<>();
         for (JsonNode film : jsonMapper.readTree(json).path("results")) {
-            String title = film.path("title").asString();
-            LocalDate releaseDate = LocalDate.parse(film.path("release_date").asString());
-            String description = film.path("opening_crawl").asString();
-            Episode episode = new Episode(film.path("episode_id").asInt());
-            log.info("{} - episode {} ({})", title, episode, releaseDate);
-            films.add(new Film(title, episode, releaseDate, description));
+            Map<String, String> extras = new LinkedHashMap<>();
+            extras.put("openingCrawl", film.path("opening_crawl").asString());
+            extras.put("producer", film.path("producer").asString());
+            Film parsed = Film.builder()
+                    .title(film.path("title").asString())
+                    .label("Episode " + RomanNumeral.toRoman(film.path("episode_id").asInt()))
+                    .releaseDate(LocalDate.parse(film.path("release_date").asString()))
+                    .director(film.path("director").asString())
+                    .extras(extras)
+                    .source(SOURCE)
+                    .externalId(film.path("url").asString())
+                    .build();
+            log.info("{} ({})", parsed.getDisplayTitle(), parsed.getReleaseDate());
+            films.add(parsed);
         }
-        log.info("{}", films);
         return films;
     }
 

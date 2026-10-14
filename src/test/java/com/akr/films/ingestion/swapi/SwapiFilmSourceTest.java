@@ -12,7 +12,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.akr.films.domain.Episode;
 import com.akr.films.domain.Film;
 import com.akr.films.ingestion.HttpFetcher;
 
@@ -24,7 +23,7 @@ class SwapiFilmSourceTest {
     void shouldFetchResourceAndParseFilms() {
         HttpFetcher fetch = mock(HttpFetcher.class);
         SwapiFilmParser parser = mock(SwapiFilmParser.class);
-        List<Film> films = List.of(new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl"));
+        List<Film> films = List.of(Film.builder().title("A New Hope").releaseDate(LocalDate.of(1977, 5, 25)).build());
         when(fetch.get(any(WebClient.class), eq("/films"))).thenReturn(Mono.just("{json}"));
         when(parser.parse("{json}")).thenReturn(films);
 

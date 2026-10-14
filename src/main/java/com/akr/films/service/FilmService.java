@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.akr.films.domain.Episode;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
@@ -13,7 +12,6 @@ import com.akr.films.mapper.FilmMapper;
 import com.akr.films.mapper.FilmUpdateMapper;
 import com.akr.films.repository.FilmFindable;
 import com.akr.films.repository.FilmUpdatable;
-import com.akr.films.util.EpisodeParser;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,16 +28,15 @@ public class FilmService {
         return mapper.toSummary(finder.findAll());
     }
 
-    public FilmDetail findByEpisode(String value) {
-        Episode episode = EpisodeParser.parse(value);
-        return finder.findById(episode.toInt())
+    public FilmDetail findById(String id) {
+        return finder.findById(id)
                 .map(mapper::toDetail)
-                .orElseThrow(() -> new FilmNotFoundException(episode.toString()));
+                .orElseThrow(() -> new FilmNotFoundException(id));
     }
 
     public FilmDetail update(Film changes) {
-        Film current = finder.findById(changes.getEpisode().toInt())
-                .orElseThrow(() -> new FilmNotFoundException(changes.getEpisode().toString()));
+        Film current = finder.findById(changes.getId())
+                .orElseThrow(() -> new FilmNotFoundException(changes.getId()));
         
         Film before = current.toBuilder().build();
 

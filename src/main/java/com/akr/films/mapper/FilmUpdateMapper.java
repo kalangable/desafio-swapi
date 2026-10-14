@@ -10,7 +10,11 @@ import com.akr.films.domain.Film;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface FilmUpdateMapper {
 
-    @Mapping(target = "episode", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "label", ignore = true)
+    @Mapping(target = "extras", ignore = true)
+    @Mapping(target = "source", ignore = true)
+    @Mapping(target = "externalId", ignore = true)
     @Mapping(target = "version", ignore = true)
     void apply(Film changes, @MappingTarget Film current);
 

@@ -1,6 +1,9 @@
 package com.akr.films.repository.memory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -8,39 +11,59 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import com.akr.films.domain.Episode;
 import com.akr.films.domain.Film;
 
 class InMemoryFilmRepositoryTest {
 
     private final InMemoryFilmRepository repository = new InMemoryFilmRepository();
 
+    private Film.FilmBuilder newHope() {
+        return Film.builder().title("A New Hope").releaseDate(LocalDate.of(1977, 5, 25));
+    }
+
     @Test
     void shouldReturnInsertedFilm() {
-        Film film = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl");
+        Film film = newHope().build();
         assertEquals(film, repository.insert(film));
     }
 
     @Test
-    void shouldFindInsertedFilmByEpisodeNumber() {
-        Film film = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl");
-        repository.insert(film);
-        assertEquals(Optional.of(film), repository.findById(4));
+    void shouldGenerateAnIdWhenTheFilmHasNone() {
+        Film film = repository.insert(newHope().build());
+
+        assertNotNull(film.getId());
+        assertEquals(Optional.of(film), repository.findById(film.getId()));
     }
 
     @Test
-    void shouldReturnEmptyWhenEpisodeDoesNotExist() {
-        assertTrue(repository.findById(4).isEmpty());
+    void shouldKeepTheInformedId() {
+        repository.insert(newHope().id("fixed").build());
+
+        assertFalse(repository.findById("fixed").isPresent());
+    }
+
+    @Test
+    void shouldGenerateDifferentIdsForDifferentFilms() {
+        Film first = repository.insert(newHope().build());
+        Film second = repository.insert(newHope().build());
+
+        assertNotEquals(first.getId(), second.getId());
+        assertEquals(2, repository.findAll().size());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenIdDoesNotExist() {
+        assertTrue(repository.findById("missing").isEmpty());
     }
 
     @Test
     void shouldFindAllInsertedFilms() {
-        Film newHope = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl");
-        Film empire = new Film("The Empire Strikes Back", new Episode(5), LocalDate.of(1980, 5, 17), "crawl");
-        repository.insert(newHope);
-        repository.insert(empire);
+        Film newHope = repository.insert(newHope().build());
+        Film empire = repository.insert(Film.builder().title("The Empire Strikes Back").build());
+
         assertEquals(2, repository.findAll().size());
         assertTrue(repository.findAll().contains(newHope));
+        assertTrue(repository.findAll().contains(empire));
     }
 
     @Test
@@ -50,11 +73,11 @@ class InMemoryFilmRepositoryTest {
 
     @Test
     void shouldReplaceFilmOnUpdate() {
-        repository.insert(new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl"));
-        Film updated = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "new crawl");
+        Film inserted = repository.insert(newHope().build());
+        Film updated = inserted.toBuilder().synopsis("new synopsis").build();
 
         assertEquals(updated, repository.update(updated));
-        assertEquals(Optional.of(updated), repository.findById(4));
+        assertEquals(Optional.of(updated), repository.findById(inserted.getId()));
     }
 
 }

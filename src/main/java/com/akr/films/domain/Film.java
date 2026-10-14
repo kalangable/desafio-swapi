@@ -1,6 +1,8 @@
 package com.akr.films.domain;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,15 +15,22 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class Film {
 
+    private String id;
     private String title;
-    private Episode episode;
+    private String label;
     private LocalDate releaseDate;
-    private String description;
+    private String synopsis;
+    private Integer runtimeMinutes;
+    private String director;
+    @Builder.Default
+    private Map<String, String> extras = new LinkedHashMap<>();
+    private String source;
+    private String externalId;
     @Builder.Default
     private Version version = new Version();
 
-    public Film(String title, Episode episode, LocalDate releaseDate, String description) {
-        this(title, episode, releaseDate, description, new Version());
+    public String getDisplayTitle() {
+        return label == null ? title : label + " - " + title;
     }
 
 }

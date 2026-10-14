@@ -3,10 +3,10 @@ package com.akr.films.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import com.akr.films.domain.Episode;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.Version;
 
@@ -14,42 +14,66 @@ class FilmUpdateMapperTest {
 
     private final FilmUpdateMapper mapper = new FilmUpdateMapperImpl();
 
-    private final Film current = new Film("A New Hope", new Episode(4), LocalDate.of(1977, 5, 25), "crawl", new Version(1));
+    private final Film current = Film.builder()
+            .id("1")
+            .title("A New Hope")
+            .label("Episode IV")
+            .releaseDate(LocalDate.of(1977, 5, 25))
+            .synopsis("synopsis")
+            .runtimeMinutes(121)
+            .director("George Lucas")
+            .extras(Map.of("openingCrawl", "crawl"))
+            .source("swapi")
+            .externalId("https://swapi.dev/api/films/1/")
+            .version(new Version(1))
+            .build();
 
     @Test
     void shouldReplaceOnlyTheFieldsThatAreNotNull() {
-        mapper.apply(new Film(null, null, null, "new crawl", null), current);
+        mapper.apply(Film.builder().synopsis("new synopsis").build(), current);
 
         assertEquals("A New Hope", current.getTitle());
         assertEquals(LocalDate.of(1977, 5, 25), current.getReleaseDate());
-        assertEquals("new crawl", current.getDescription());
+        assertEquals("new synopsis", current.getSynopsis());
+        assertEquals(121, current.getRuntimeMinutes());
+        assertEquals("George Lucas", current.getDirector());
     }
 
     @Test
     void shouldReplaceAllEditableFieldsWhenNoneIsNull() {
-        mapper.apply(new Film("Episode IV", null, LocalDate.of(1978, 1, 1), "new crawl", null), current);
+        Film changes = Film.builder().title("Episode IV").releaseDate(LocalDate.of(1978, 1, 1))
+                .synopsis("new synopsis").runtimeMinutes(120).director("Lucas").build();
+
+        mapper.apply(changes, current);
 
         assertEquals("Episode IV", current.getTitle());
         assertEquals(LocalDate.of(1978, 1, 1), current.getReleaseDate());
-        assertEquals("new crawl", current.getDescription());
+        assertEquals("new synopsis", current.getSynopsis());
+        assertEquals(120, current.getRuntimeMinutes());
+        assertEquals("Lucas", current.getDirector());
     }
 
     @Test
     void shouldChangeNothingWhenAllFieldsAreNull() {
+        Film before = current.toBuilder().build();
+
         mapper.apply(new Film(), current);
 
-        assertEquals("A New Hope", current.getTitle());
-        assertEquals(LocalDate.of(1977, 5, 25), current.getReleaseDate());
-        assertEquals("crawl", current.getDescription());
+        assertEquals(before, current);
     }
 
     @Test
-    void shouldNeverChangeEpisodeOrVersion() {
-        Film changes = new Film("Other", new Episode(5), LocalDate.of(1980, 5, 17), "other", new Version(9));
+    void shouldNeverChangeTheFieldsThatCannotBeEdited() {
+        Film changes = Film.builder().id("2").label("Episode V").extras(Map.of("k", "v")).source("other")
+                .externalId("other").version(new Version(9)).build();
 
         mapper.apply(changes, current);
 
-        assertEquals(4, current.getEpisode().toInt());
+        assertEquals("1", current.getId());
+        assertEquals("Episode IV", current.getLabel());
+        assertEquals(Map.of("openingCrawl", "crawl"), current.getExtras());
+        assertEquals("swapi", current.getSource());
+        assertEquals("https://swapi.dev/api/films/1/", current.getExternalId());
         assertEquals(new Version(1), current.getVersion());
     }
 

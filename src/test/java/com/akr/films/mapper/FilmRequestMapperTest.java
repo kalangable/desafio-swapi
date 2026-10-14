@@ -2,7 +2,7 @@ package com.akr.films.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -11,42 +11,51 @@ import org.junit.jupiter.api.Test;
 
 import com.akr.films.controller.FilmRequestUpdate;
 import com.akr.films.domain.Film;
-import com.akr.films.exception.InvalidEpisodeException;
 
 class FilmRequestMapperTest {
 
     private final FilmRequestMapper mapper = new FilmRequestMapperImpl(new OptionalUnwrapperImpl());
 
     @Test
-    void shouldUnwrapThePresentFieldsAndParseTheEpisode() {
-        FilmRequestUpdate request = new FilmRequestUpdate(
-                Optional.of("A New Hope"), Optional.of(LocalDate.of(1977, 5, 25)), Optional.of("crawl"));
+    void shouldUnwrapThePresentFieldsAndKeepTheId() {
+        FilmRequestUpdate request = new FilmRequestUpdate(Optional.of("A New Hope"),
+                Optional.of(LocalDate.of(1977, 5, 25)), Optional.of("synopsis"), Optional.of(121),
+                Optional.of("George Lucas"));
 
-        Film film = mapper.toFilm("IV", request);
+        Film film = mapper.toFilm("1", request);
 
+        assertEquals("1", film.getId());
         assertEquals("A New Hope", film.getTitle());
-        assertEquals(4, film.getEpisode().toInt());
         assertEquals(LocalDate.of(1977, 5, 25), film.getReleaseDate());
-        assertEquals("crawl", film.getDescription());
+        assertEquals("synopsis", film.getSynopsis());
+        assertEquals(121, film.getRuntimeMinutes());
+        assertEquals("George Lucas", film.getDirector());
     }
 
     @Test
     void shouldLeaveAbsentFieldsAsNull() {
-        FilmRequestUpdate request = new FilmRequestUpdate(Optional.empty(), Optional.empty(), Optional.of("new crawl"));
+        FilmRequestUpdate request = new FilmRequestUpdate(Optional.empty(), Optional.empty(),
+                Optional.of("new synopsis"), Optional.empty(), Optional.empty());
 
-        Film film = mapper.toFilm("4", request);
+        Film film = mapper.toFilm("1", request);
 
         assertNull(film.getTitle());
         assertNull(film.getReleaseDate());
-        assertEquals("new crawl", film.getDescription());
-        assertEquals(4, film.getEpisode().toInt());
+        assertNull(film.getRuntimeMinutes());
+        assertNull(film.getDirector());
+        assertEquals("new synopsis", film.getSynopsis());
+        assertEquals("1", film.getId());
     }
 
     @Test
-    void shouldRejectInvalidEpisode() {
-        FilmRequestUpdate request = new FilmRequestUpdate(Optional.empty(), Optional.empty(), Optional.of("crawl"));
+    void shouldNotFillTheFieldsThatCannotBeEdited() {
+        Film film = mapper.toFilm("1", new FilmRequestUpdate(Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty()));
 
-        assertThrows(InvalidEpisodeException.class, () -> mapper.toFilm("abc", request));
+        assertNull(film.getLabel());
+        assertNull(film.getSource());
+        assertNull(film.getExternalId());
+        assertTrue(film.getExtras().isEmpty());
     }
 
 }

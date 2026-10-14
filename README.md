@@ -66,6 +66,28 @@ sequenceDiagram
     end
 ```
 
+### O que a fonte define
+
+Cada fonte devolve `List<Film>` já preenchida com o que a sua API oferece:
+
+- `title`, `releaseDate` e, se existirem, `synopsis`, `runtimeMinutes` e `director`;
+- `label`: rótulo opcional usado no nome de apresentação (na SWAPI, "Episode IV");
+- `extras`: `Map<String, String>` com dados específicos da fonte (na SWAPI, `openingCrawl` e `producer`);
+- `source` e `externalId`: de onde o filme veio e o seu identificador lá.
+
+O `id` do filme é gerado (UUID) ao inserir no repositório.
+
+## Endpoints
+
+| Método | Path | Descrição |
+|---|---|---|
+| GET | `/films` | Lista `id` e `displayTitle` (ex.: "Episode IV - A New Hope") |
+| GET | `/films/{id}` | Detalhe do filme, incluindo `extras` |
+| PATCH | `/films/{id}` | Altera `title`, `releaseDate`, `synopsis`, `runtimeMinutes` e `director` |
+
+O `displayTitle` é derivado: `label - title` quando há `label`, senão só o `title`.
+A documentação interativa fica em `/swagger-ui.html`.
+
 ### Adicionando uma nova fonte
 
 1. Criar o package `ingestion/<nome>/` com um `@ConfigurationProperties(prefix = "sources.<nome>")`.
