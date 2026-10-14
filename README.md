@@ -119,7 +119,7 @@ mvn test
 
 | Método | Path | Descrição |
 |---|---|---|
-| GET | `/films?page=&size=` | Lista paginada com `id`, `displayTitle` e `franchise` |
+| GET | `/films?page=&size=` | Lista paginada com `id`, `displayTitle`, `franchise` e `version` |
 | GET | `/films/{id}` | Detalhe do filme, incluindo `extras` |
 | PATCH | `/films/{id}` | Altera `title`, `releaseDate`, `synopsis`, `runtimeMinutes` e `director` |
 | GET | `/franchises` | Lista as franquias (`slug` e `name`) que têm filmes carregados |
@@ -134,8 +134,8 @@ curl "localhost:8080/films?page=0&size=2"
 ```json
 {
   "content": [
-    { "id": "star-wars-1", "displayTitle": "Episode I - The Phantom Menace", "franchise": "Star Wars" },
-    { "id": "star-wars-2", "displayTitle": "Episode II - Attack of the Clones", "franchise": "Star Wars" }
+    { "id": "star-wars-1", "displayTitle": "Episode I - The Phantom Menace", "franchise": "Star Wars", "version": "1" },
+    { "id": "star-wars-2", "displayTitle": "Episode II - Attack of the Clones", "franchise": "Star Wars", "version": "1" }
   ],
   "page": { "size": 2, "number": 0, "totalElements": 6, "totalPages": 3 }
 }
@@ -144,6 +144,7 @@ curl "localhost:8080/films?page=0&size=2"
 - `page` começa em 0, e `size` é a quantidade de filmes por página. Um filme nunca aparece em mais de uma página.
 - Uma página depois da última devolve `content` vazio.
 - `page` negativo, `size` menor que 1 ou acima do máximo devolve 400.
+- A `version` começa em `"1"` e aumenta a cada alteração feita pelo `PATCH`, então a lista já mostra se um filme foi editado.
 - O `displayTitle` é derivado: `label - title` quando o filme tem `label`, senão só o `title`.
 
 ### Detalhe de um filme
