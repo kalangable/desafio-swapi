@@ -1,0 +1,3 @@
+# Contexto mínimo para o Dockerfile: só o jar construído em target/
+*
+!target/*.jar
