@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.akr.films.domain.Film;
+import com.akr.films.domain.Identifier;
 
 class SwapiFilmParserTest {
 
@@ -45,7 +46,7 @@ class SwapiFilmParserTest {
         assertTrue(newHope.getExtras().get("openingCrawl").startsWith("It is a period of civil war."));
         assertNull(newHope.getSynopsis());
         assertNull(newHope.getRuntimeMinutes());
-        assertNull(newHope.getId());
+        assertEquals(new Identifier("star-wars-4"), newHope.getId());
     }
 
     @Test

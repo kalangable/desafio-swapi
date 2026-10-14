@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import com.akr.films.domain.Identifier;
 import com.akr.films.controller.FilmRequestUpdate;
 import com.akr.films.domain.Film;
 
@@ -24,7 +25,7 @@ class FilmRequestMapperTest {
 
         Film film = mapper.toFilm("1", request);
 
-        assertEquals("1", film.getId());
+        assertEquals(new Identifier("1"), film.getId());
         assertEquals("A New Hope", film.getTitle());
         assertEquals(LocalDate.of(1977, 5, 25), film.getReleaseDate());
         assertEquals("synopsis", film.getSynopsis());
@@ -44,7 +45,7 @@ class FilmRequestMapperTest {
         assertNull(film.getRuntimeMinutes());
         assertNull(film.getDirector());
         assertEquals("new synopsis", film.getSynopsis());
-        assertEquals("1", film.getId());
+        assertEquals(new Identifier("1"), film.getId());
     }
 
     @Test

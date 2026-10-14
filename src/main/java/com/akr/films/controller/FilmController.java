@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
+import com.akr.films.domain.Identifier;
 import com.akr.films.mapper.FilmRequestMapper;
 import com.akr.films.service.FilmService;
 
@@ -36,7 +37,7 @@ public class FilmController implements FilmApi {
     @Override
     @GetMapping("/{id}")
     public FilmDetail getById(@PathVariable String id) {
-        return service.findById(id);
+        return service.findById(new Identifier(id));
     }
 
     @Override

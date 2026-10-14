@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class Film {
 
-    private String id;
+    private Identifier id;
     private String title;
     private String label;
     private LocalDate releaseDate;

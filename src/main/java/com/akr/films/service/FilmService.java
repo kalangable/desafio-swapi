@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
+import com.akr.films.domain.Identifier;
 import com.akr.films.exception.FilmNotFoundException;
 import com.akr.films.mapper.FilmMapper;
 import com.akr.films.mapper.FilmUpdateMapper;
@@ -28,15 +29,15 @@ public class FilmService {
         return mapper.toSummary(finder.findAll());
     }
 
-    public FilmDetail findById(String id) {
+    public FilmDetail findById(Identifier id) {
         return finder.findById(id)
                 .map(mapper::toDetail)
-                .orElseThrow(() -> new FilmNotFoundException(id));
+                .orElseThrow(() -> new FilmNotFoundException(id.value()));
     }
 
     public FilmDetail update(Film changes) {
         Film current = finder.findById(changes.getId())
-                .orElseThrow(() -> new FilmNotFoundException(changes.getId()));
+                .orElseThrow(() -> new FilmNotFoundException(changes.getId().value()));
         
         Film before = current.toBuilder().build();
 

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.akr.films.domain.Identifier;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
@@ -50,7 +51,7 @@ class FilmServiceTest {
 
     private Film newHope() {
         return Film.builder()
-                .id("1")
+                .id(new Identifier("1"))
                 .title("A New Hope")
                 .label("Episode IV")
                 .releaseDate(LocalDate.of(1977, 5, 25))
@@ -63,7 +64,7 @@ class FilmServiceTest {
 
     @Test
     void shouldFindAllAsSummaries() {
-        when(repository.findAll()).thenReturn(List.of(newHope(), Film.builder().id("2").title("Heat").build()));
+        when(repository.findAll()).thenReturn(List.of(newHope(), Film.builder().id(new Identifier("2")).title("Heat").build()));
 
         assertEquals(List.of(
                 new FilmSummary("1", "Episode IV - A New Hope"),
@@ -79,9 +80,9 @@ class FilmServiceTest {
 
     @Test
     void shouldFindById() {
-        when(repository.findById("1")).thenReturn(Optional.of(newHope()));
+        when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(newHope()));
 
-        FilmDetail detail = service.findById("1");
+        FilmDetail detail = service.findById(new Identifier("1"));
 
         assertEquals("A New Hope", detail.title());
         assertEquals("Episode IV - A New Hope", detail.displayTitle());
@@ -90,16 +91,16 @@ class FilmServiceTest {
 
     @Test
     void shouldFailWhenIdIsNotLoaded() {
-        when(repository.findById("x")).thenReturn(Optional.empty());
+        when(repository.findById(new Identifier("x"))).thenReturn(Optional.empty());
 
-        assertThrows(FilmNotFoundException.class, () -> service.findById("x"));
+        assertThrows(FilmNotFoundException.class, () -> service.findById(new Identifier("x")));
     }
 
     @Test
     void shouldChangeOnlyInformedFieldsAndIncrementTheVersion() {
         Film current = newHope();
-        Film changes = Film.builder().id("1").synopsis("new synopsis").runtimeMinutes(121).build();
-        when(repository.findById("1")).thenReturn(Optional.of(current));
+        Film changes = Film.builder().id(new Identifier("1")).synopsis("new synopsis").runtimeMinutes(121).build();
+        when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(current));
         when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         FilmDetail detail = service.update(changes);
@@ -113,19 +114,19 @@ class FilmServiceTest {
 
     @Test
     void shouldKeepTheLabelWhenTheTitleChanges() {
-        when(repository.findById("1")).thenReturn(Optional.of(newHope()));
+        when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(newHope()));
         when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        FilmDetail detail = service.update(Film.builder().id("1").title("A Good Hope").build());
+        FilmDetail detail = service.update(Film.builder().id(new Identifier("1")).title("A Good Hope").build());
 
         assertEquals("Episode IV - A Good Hope", detail.displayTitle());
     }
 
     @Test
     void shouldNotSaveNorIncrementTheVersionWhenNothingChanges() {
-        when(repository.findById("1")).thenReturn(Optional.of(newHope()));
+        when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(newHope()));
 
-        FilmDetail detail = service.update(Film.builder().id("1").title("A New Hope").build());
+        FilmDetail detail = service.update(Film.builder().id(new Identifier("1")).title("A New Hope").build());
 
         assertEquals("1", detail.version());
         verifyNoInteractions(updater);
@@ -133,9 +134,9 @@ class FilmServiceTest {
 
     @Test
     void shouldNotIncrementTheVersionWhenNoFieldIsInformed() {
-        when(repository.findById("1")).thenReturn(Optional.of(newHope()));
+        when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(newHope()));
 
-        FilmDetail detail = service.update(Film.builder().id("1").build());
+        FilmDetail detail = service.update(Film.builder().id(new Identifier("1")).build());
 
         assertEquals("1", detail.version());
         verifyNoInteractions(updater);
@@ -144,8 +145,8 @@ class FilmServiceTest {
     @Test
     void shouldSaveOnlyOnceWhenTheSameChangeIsSentRepeatedly() {
         Film current = newHope();
-        Film changes = Film.builder().id("1").title("A Good Hope").build();
-        when(repository.findById("1")).thenReturn(Optional.of(current));
+        Film changes = Film.builder().id(new Identifier("1")).title("A Good Hope").build();
+        when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(current));
         when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         service.update(changes);
@@ -159,8 +160,8 @@ class FilmServiceTest {
 
     @Test
     void shouldFailUpdateWithoutUpdatingWhenFilmIsNotLoaded() {
-        Film changes = Film.builder().id("x").synopsis("synopsis").build();
-        when(repository.findById("x")).thenReturn(Optional.empty());
+        Film changes = Film.builder().id(new Identifier("x")).synopsis("synopsis").build();
+        when(repository.findById(new Identifier("x"))).thenReturn(Optional.empty());
 
         assertThrows(FilmNotFoundException.class, () -> service.update(changes));
         verifyNoInteractions(updater);

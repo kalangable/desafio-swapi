@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import com.akr.films.domain.Identifier;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
@@ -18,7 +19,7 @@ class FilmMapperTest {
     private final FilmMapper mapper = new FilmMapperImpl();
 
     private final Film film = Film.builder()
-            .id("1")
+            .id(new Identifier("1"))
             .title("A New Hope")
             .label("Episode IV")
             .releaseDate(LocalDate.of(1977, 5, 25))
@@ -38,7 +39,7 @@ class FilmMapperTest {
 
     @Test
     void shouldMapAllFilmsToSummaries() {
-        Film other = Film.builder().id("2").title("Heat").build();
+        Film other = Film.builder().id(new Identifier("2")).title("Heat").build();
 
         List<FilmSummary> summaries = mapper.toSummary(List.of(film, other));
 

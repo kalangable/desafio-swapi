@@ -1,8 +1,9 @@
 package com.akr.films.repository;
 
 import com.akr.films.domain.Film;
+import com.akr.films.domain.Identifier;
 import com.akr.films.repository.contract.Findable;
 
-public interface FilmFindable extends Findable<Film, String> {
+public interface FilmFindable extends Findable<Film, Identifier> {
 
 }

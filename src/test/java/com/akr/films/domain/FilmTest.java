@@ -36,7 +36,7 @@ class FilmTest {
 
     @Test
     void shouldCopyAllFields() {
-        Film film = newHope().id("1").label("Episode IV").version(new Version(3)).build();
+        Film film = newHope().id(new Identifier("1")).label("Episode IV").version(new Version(3)).build();
         Film copy = film.toBuilder().build();
 
         assertEquals(film, copy);

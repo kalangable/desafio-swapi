@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import com.akr.films.domain.Identifier;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
@@ -77,7 +78,7 @@ class FilmControllerTest {
 
     @Test
     void shouldReturnFilmDetailById() {
-        when(service.findById("1")).thenReturn(newHope(null, "1"));
+        when(service.findById(new Identifier("1"))).thenReturn(newHope(null, "1"));
 
         client.get().uri("/films/1")
                 .exchange()
@@ -95,7 +96,7 @@ class FilmControllerTest {
 
     @Test
     void shouldReturnNotFoundProblemDetailWhenFilmDoesNotExist() {
-        when(service.findById("x")).thenThrow(new FilmNotFoundException("x"));
+        when(service.findById(new Identifier("x"))).thenThrow(new FilmNotFoundException("x"));
 
         client.get().uri("/films/x")
                 .exchange()
@@ -123,7 +124,7 @@ class FilmControllerTest {
 
         ArgumentCaptor<Film> sent = ArgumentCaptor.forClass(Film.class);
         verify(service).update(sent.capture());
-        assertEquals("1", sent.getValue().getId());
+        assertEquals(new Identifier("1"), sent.getValue().getId());
         assertEquals("new synopsis", sent.getValue().getSynopsis());
         assertEquals(121, sent.getValue().getRuntimeMinutes());
         assertNull(sent.getValue().getTitle());

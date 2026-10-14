@@ -1,9 +1,6 @@
 package com.akr.films.repository.memory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -12,13 +9,17 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 import com.akr.films.domain.Film;
+import com.akr.films.domain.Identifier;
 
 class InMemoryFilmRepositoryTest {
 
     private final InMemoryFilmRepository repository = new InMemoryFilmRepository();
 
     private Film.FilmBuilder newHope() {
-        return Film.builder().title("A New Hope").releaseDate(LocalDate.of(1977, 5, 25));
+        return Film.builder()
+                .id(new Identifier("star-wars-1"))
+                .title("A New Hope")
+                .releaseDate(LocalDate.of(1977, 5, 25));
     }
 
     @Test
@@ -28,38 +29,22 @@ class InMemoryFilmRepositoryTest {
     }
 
     @Test
-    void shouldGenerateAnIdWhenTheFilmHasNone() {
+    void shouldFindInsertedFilmById() {
         Film film = repository.insert(newHope().build());
 
-        assertNotNull(film.getId());
-        assertEquals(Optional.of(film), repository.findById(film.getId()));
-    }
-
-    @Test
-    void shouldKeepTheInformedId() {
-        repository.insert(newHope().id("fixed").build());
-
-        assertFalse(repository.findById("fixed").isPresent());
-    }
-
-    @Test
-    void shouldGenerateDifferentIdsForDifferentFilms() {
-        Film first = repository.insert(newHope().build());
-        Film second = repository.insert(newHope().build());
-
-        assertNotEquals(first.getId(), second.getId());
-        assertEquals(2, repository.findAll().size());
+        assertEquals(Optional.of(film), repository.findById(new Identifier("star-wars-1")));
     }
 
     @Test
     void shouldReturnEmptyWhenIdDoesNotExist() {
-        assertTrue(repository.findById("missing").isEmpty());
+        assertTrue(repository.findById(new Identifier("missing")).isEmpty());
     }
 
     @Test
     void shouldFindAllInsertedFilms() {
         Film newHope = repository.insert(newHope().build());
-        Film empire = repository.insert(Film.builder().title("The Empire Strikes Back").build());
+        Film empire = repository.insert(
+                Film.builder().id(new Identifier("star-wars-2")).title("The Empire Strikes Back").build());
 
         assertEquals(2, repository.findAll().size());
         assertTrue(repository.findAll().contains(newHope));
