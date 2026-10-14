@@ -33,18 +33,23 @@ public class FilmController implements FilmApi {
     @GetMapping
     public PageResponse<FilmSummary> getAll(@RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
+        log.atDebug().addKeyValue("event", "films_list").addKeyValue("page", page).addKeyValue("size", size)
+                .log("GET /films page={} size={}", page, size);
         return service.findAll(pagination.resolve(page, size));
     }
 
     @Override
     @GetMapping("/{id}")
     public FilmDetail getById(@PathVariable String id) {
+        log.atDebug().addKeyValue("event", "film_get").addKeyValue("filmId", id).log("GET /films/{}", id);
         return service.findById(new Identifier(id));
     }
 
     @Override
     @PatchMapping("/{id}")
     public FilmDetail update(@PathVariable String id, @RequestBody FilmRequestUpdate request) {
+        log.atInfo().addKeyValue("event", "film_patch").addKeyValue("filmId", id)
+                .addKeyValue("fields", request.presentFields()).log("PATCH /films/{} fields {}", id, request.presentFields());
         var filmMapped = requestMapper.toFilm(id, request);
         return service.update(filmMapped);
     }

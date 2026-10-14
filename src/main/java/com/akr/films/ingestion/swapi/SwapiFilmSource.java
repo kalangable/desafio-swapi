@@ -11,7 +11,10 @@ import com.akr.films.domain.Film;
 import com.akr.films.ingestion.HttpFetcher;
 import com.akr.films.ingestion.FilmSource;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class SwapiFilmSource implements FilmSource {
 
     private final WebClient webClient;
@@ -31,6 +34,9 @@ public class SwapiFilmSource implements FilmSource {
 
     @Override
     public List<Film> fetch() {
+        log.atInfo().addKeyValue("event", "source_fetch").addKeyValue("source", "swapi")
+                .addKeyValue("uri", properties.host() + properties.resource())
+                .log("Fetching films from {}{}", properties.host(), properties.resource());
         String json = httpFetcher.get(webClient, properties.resource()).block();
         return parser.parse(json);
     }

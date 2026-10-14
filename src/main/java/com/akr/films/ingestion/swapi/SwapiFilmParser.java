@@ -44,9 +44,12 @@ public class SwapiFilmParser {
                     .source(SOURCE)
                     .externalId(film.path("url").asString())
                     .build();
-            log.info("{} ({})", parsed.getDisplayTitle(), parsed.getReleaseDate());
+            log.atDebug().addKeyValue("event", "film_parsed").addKeyValue("filmId", parsed.getId().value())
+                    .log("Parsed {} ({}) as {}", parsed.getDisplayTitle(), parsed.getReleaseDate(), parsed.getId());
             films.add(parsed);
         }
+        log.atInfo().addKeyValue("event", "films_parsed").addKeyValue("source", "swapi")
+                .addKeyValue("count", films.size()).log("Parsed {} films from the SWAPI response", films.size());
         return films;
     }
 

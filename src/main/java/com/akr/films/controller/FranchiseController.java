@@ -14,9 +14,11 @@ import com.akr.films.domain.PageResponse;
 import com.akr.films.service.FranchiseService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/franchises")
+@Slf4j
 @RequiredArgsConstructor
 public class FranchiseController implements FranchiseApi {
 
@@ -26,6 +28,7 @@ public class FranchiseController implements FranchiseApi {
     @Override
     @GetMapping
     public List<Franchise> getAll() {
+        log.atDebug().addKeyValue("event", "franchises_list").log("GET /franchises");
         return service.findAll();
     }
 
@@ -33,6 +36,9 @@ public class FranchiseController implements FranchiseApi {
     @GetMapping("/{slug}/films")
     public PageResponse<FilmSummary> getFilms(@PathVariable String slug,
             @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
+        log.atDebug().addKeyValue("event", "franchise_films_list").addKeyValue("slug", slug)
+                .addKeyValue("page", page).addKeyValue("size", size)
+                .log("GET /franchises/{}/films page={} size={}", slug, page, size);
         return service.findFilms(slug, pagination.resolve(page, size));
     }
 

@@ -129,6 +129,31 @@ O `slug` só aparece em `/franchises`, porque é o que vai na URL. Nos filmes (`
 
 `GET /franchises/star-wars/films` devolve a página de `FilmSummary` daquela franquia, com o mesmo formato e os mesmos parâmetros de paginação do `GET /films`. O slug não diferencia maiúsculas de minúsculas. Um slug que não existe devolve 404. A franquia de um filme não pode ser alterada pelo `PATCH`.
 
+## Logs (Grafana/Loki)
+
+Por padrão o console mostra texto legível. Com o perfil `json`, cada log vira **uma linha JSON**, pronta para o Loki e consultável no Grafana:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=json
+```
+
+Cada linha traz `@timestamp`, `level`, `message`, `logger_name`, `app` e:
+
+- **`event`**: nome estável do que aconteceu (`http_request`, `film_updated`, `film_not_found`, `request_rejected`, `source_import_summary`, `film_skipped`, `http_retry`, `http_failed`, ...). É o campo para contar, agrupar e alertar.
+- **Contexto do evento**, como `filmId`, `source`, `slug`, `page`, `size`, `version`, `status`, `durationMs`, `imported`, `total`.
+- **`requestId`**: presente em todas as linhas de uma requisição. Vem do header `X-Request-Id` (ou é gerado) e é devolvido no mesmo header da resposta. As chamadas ao `/actuator` não são logadas.
+
+Exemplos de consulta no Grafana (LogQL):
+
+```logql
+{app="desafio"} | json | event="http_request" | status >= 500
+{app="desafio"} | json | event="film_not_found"
+{app="desafio"} | json | requestId="req-42"
+{app="desafio"} | json | event="source_import_summary" | imported < total
+```
+
+Use poucos rótulos no Loki (por exemplo `app` e `level`) e deixe `filmId` e `requestId` no corpo do JSON: são valores de cardinalidade alta.
+
 ### Adicionando uma nova fonte
 
 1. Criar o package `ingestion/<nome>/` com um `@ConfigurationProperties(prefix = "sources.<nome>")`.
