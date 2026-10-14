@@ -30,8 +30,8 @@ public interface FranchiseApi {
     List<Franchise> getAll();
 
     @Operation(summary = "List the films of a franchise",
-            description = "Returns one page with the id and the display title of the films of the franchise "
-                    + "identified by the slug. A film never appears in more than one page.")
+            description = "Returns one page with the id, the display title, the franchise and the version of the films "
+                    + "of the franchise identified by the slug. A film never appears in more than one page.")
     @ApiResponse(responseCode = "200", description = "Page of films of the franchise",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = PageResponse.class)))

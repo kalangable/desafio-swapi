@@ -68,8 +68,8 @@ class FranchiseControllerTest {
     void shouldListTheDefaultPageOfTheFilmsOfAFranchise() {
         PageQuery query = new PageQuery(0, 2);
         when(service.findFilms("star-wars", query)).thenReturn(PageResponse.of(List.of(
-                new FilmSummary("star-wars-4", "Episode IV - A New Hope", "Star Wars"),
-                new FilmSummary("star-wars-5", "Episode V - The Empire Strikes Back", "Star Wars")), query, 3));
+                new FilmSummary("star-wars-4", "Episode IV - A New Hope", "Star Wars", "1"),
+                new FilmSummary("star-wars-5", "Episode V - The Empire Strikes Back", "Star Wars", "1")), query, 3));
 
         client.get().uri("/franchises/star-wars/films")
                 .exchange()

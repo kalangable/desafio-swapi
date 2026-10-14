@@ -35,7 +35,7 @@ class FilmMapperTest {
 
     @Test
     void shouldMapSummaryUsingIdAndDisplayTitle() {
-        assertEquals(new FilmSummary("1", "Episode IV - A New Hope", "Star Wars"), mapper.toSummary(film));
+        assertEquals(new FilmSummary("1", "Episode IV - A New Hope", "Star Wars", "3"), mapper.toSummary(film));
     }
 
     @Test

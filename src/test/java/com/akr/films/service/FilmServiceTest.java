@@ -76,8 +76,8 @@ class FilmServiceTest {
         PageResponse<FilmSummary> page = service.findAll(query);
 
         assertEquals(List.of(
-                new FilmSummary("1", "Episode IV - A New Hope", "Star Wars"),
-                new FilmSummary("2", "Heat", null)), page.content());
+                new FilmSummary("1", "Episode IV - A New Hope", "Star Wars", "1"),
+                new FilmSummary("2", "Heat", null, "1")), page.content());
         assertEquals(new PageInfo(2, 0, 5, 3), page.page());
     }
 
