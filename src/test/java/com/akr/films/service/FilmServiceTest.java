@@ -124,6 +124,18 @@ class FilmServiceTest {
     }
 
     @Test
+    void shouldRemoveLineBreaksFromTheSynopsisWhenUpdating() {
+        when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(newHope()));
+        when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        FilmDetail detail = service.update(
+                Film.builder().id(new Identifier("1")).synopsis("first line\r\nsecond line\n\nthird").build());
+
+        assertEquals("first line second line third", detail.synopsis());
+        assertEquals("2", detail.version());
+    }
+
+    @Test
     void shouldKeepTheLabelWhenTheTitleChanges() {
         when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(newHope()));
         when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));

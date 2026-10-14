@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
@@ -13,6 +12,7 @@ import com.akr.films.domain.Film;
 import com.akr.films.domain.Franchise;
 import com.akr.films.domain.Identifier;
 import com.akr.films.util.RomanNumeral;
+import com.akr.films.util.TextNormalizer;
 
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
@@ -24,7 +24,6 @@ public class SwapiFilmParser {
 
     private static final String SOURCE = "swapi";
     private static final Franchise FRANCHISE = new Franchise("star-wars", "Star Wars");
-    private static final Pattern LINE_BREAKS = Pattern.compile("\\s*[\\r\\n]+\\s*");
 
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
@@ -40,7 +39,7 @@ public class SwapiFilmParser {
                     .id(new Identifier("star-wars-" + episode))
                     .franchise(FRANCHISE)
                     .title(film.path("title").asString())
-                    .synopsis(LINE_BREAKS.matcher(description).replaceAll(" ").strip())
+                    .synopsis(TextNormalizer.singleLine(description))
                     .label("Episode " + RomanNumeral.toRoman(episode))
                     .releaseDate(LocalDate.parse(film.path("release_date").asString()))
                     .director(film.path("director").asString())

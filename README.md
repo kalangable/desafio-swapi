@@ -49,6 +49,7 @@ curl localhost:8080/actuator/health/readiness   # {"status":"UP"} quando a carga
 curl "localhost:8080/films"                     # primeira página de filmes
 ```
 
+- Sem `page` e `size`, a lista devolve 10 filmes por página (`pagination.default-size`), o que mostra todos os filmes da SWAPI de uma vez.
 - Documentação interativa (Swagger): http://localhost:8080/swagger-ui.html
 - `GET /actuator/health/readiness` só fica `UP` depois que a carga dos filmes termina; `GET /actuator/health/liveness` indica que o processo está de pé. Veja [No Kubernetes](#no-kubernetes).
 
@@ -102,7 +103,7 @@ docker run --rm -p 8080:8080 -e PAGINATION_DEFAULT_SIZE=5 -e HTTP_CLIENT_MAX_RET
 | Propriedade | Padrão | Para que serve |
 |---|---|---|
 | `pagination.default-page` | `0` | Página usada quando `page` não é informado |
-| `pagination.default-size` | `2` | Filmes por página quando `size` não é informado |
+| `pagination.default-size` | `10` | Filmes por página quando `size` não é informado |
 | `pagination.max-size` | `100` | Maior `size` aceito; acima disso a API responde 400 |
 | `http-client.timeout` | `5s` | Tempo máximo de espera por uma resposta de uma fonte |
 | `http-client.max-retries` | `3` | Tentativas extras depois da primeira falha |
@@ -160,16 +161,16 @@ curl localhost:8080/films/star-wars-4
   "displayTitle": "Episode IV - A New Hope",
   "franchise": "Star Wars",
   "releaseDate": "1977-05-25",
-  "synopsis": null,
+  "synopsis": "It is a period of civil war. Rebel spaceships, striking from a hidden base...",
   "runtimeMinutes": null,
   "director": "George Lucas",
-  "extras": { "openingCrawl": "It is a period of civil war...", "producer": "Gary Kurtz, Rick McCallum" },
+  "extras": { "openingCrawl": "It is a period of civil war.\r\nRebel spaceships...", "producer": "Gary Kurtz, Rick McCallum" },
   "source": "swapi",
   "version": "1"
 }
 ```
 
-`synopsis` e `runtimeMinutes` são `null` porque a SWAPI não os fornece; `extras` guarda o que é específico da fonte. Um id que não existe devolve 404:
+A `synopsis` vem do `opening_crawl` da SWAPI, com as quebras de linha trocadas por espaço; o texto original continua em `extras.openingCrawl`. `runtimeMinutes` é `null` porque a SWAPI não o fornece, e `extras` guarda o que é específico da fonte. Um id que não existe devolve 404:
 
 ```json
 { "detail": "Film not found: nope", "instance": "/films/nope", "status": 404, "title": "Not Found" }
@@ -183,7 +184,9 @@ curl -X PATCH localhost:8080/films/star-wars-4 \
   -d '{"runtimeMinutes": 121}'
 ```
 
-Só os campos enviados mudam. A `version` é incrementada **somente** quando algo realmente mudou, então repetir a mesma requisição não altera a versão. `id`, `franchise`, `extras` e `source` não podem ser alterados.
+Só os campos enviados mudam. A `version` é incrementada **somente** quando algo realmente mudou, então repetir a mesma requisição não altera a versão. `id`, `franchise`, `extras` e `source` não podem ser alterados. As quebras de linha da `synopsis` enviada são trocadas por espaço, como na carga inicial.
+
+**Controle de versão:** a `version` representa o estado do registro. Qualquer campo editável que realmente mude (`title`, `releaseDate`, `synopsis`, `runtimeMinutes` ou `director`) incrementa a versão, para que quem guardou a versão anterior saiba que ela ficou desatualizada. A versão aparece tanto no detalhe quanto na lista de filmes.
 
 ### Franquias
 
