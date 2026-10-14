@@ -72,6 +72,8 @@ class FilmControllerTest {
                 .jsonPath("$.content[0].id").isEqualTo("1")
                 .jsonPath("$.content[0].displayTitle").isEqualTo("Episode IV - A New Hope")
                 .jsonPath("$.content[0].franchise").isEqualTo("Star Wars")
+                .jsonPath("$.content[0].version").isEqualTo("1")
+                .jsonPath("$.content[1].version").isEqualTo("1")
                 .jsonPath("$.content[1].displayTitle").isEqualTo("Episode V - The Empire Strikes Back")
                 .jsonPath("$.page.size").isEqualTo(2)
                 .jsonPath("$.page.number").isEqualTo(0)

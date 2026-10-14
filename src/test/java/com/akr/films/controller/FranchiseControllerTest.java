@@ -78,6 +78,7 @@ class FranchiseControllerTest {
                 .jsonPath("$.content.length()").isEqualTo(2)
                 .jsonPath("$.content[0].id").isEqualTo("star-wars-4")
                 .jsonPath("$.content[0].franchise").isEqualTo("Star Wars")
+                .jsonPath("$.content[0].version").isEqualTo("1")
                 .jsonPath("$.page.totalElements").isEqualTo(3)
                 .jsonPath("$.page.totalPages").isEqualTo(2);
     }
