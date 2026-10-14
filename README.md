@@ -1,14 +1,182 @@
 # desafio-swapi
-Desenvolver api usando dados de SWAPI
 
-## Cargas de dados (fontes)
+API REST de filmes. Ao subir, ela carrega os filmes de uma ou mais **fontes** externas (hoje, a [SWAPI](https://swapi.dev), com os filmes de Star Wars) e os expõe com paginação, agrupamento por franquia e edição parcial.
 
-Ao subir a aplicação, os filmes são carregados a partir de uma ou mais **fontes** (`FilmSource`).
-Cada fonte conhece a sua API: host, autenticação e formato do JSON. Hoje existe a `SwapiFilmSource`,
-mas é possível ter várias cargas: o `FilmDataLoader` percorre todas as fontes registradas e, se uma
-falhar, registra o erro e segue para a próxima.
+A aplicação foi pensada para receber outras fontes além da SWAPI: cada fonte conhece a sua API, a sua autenticação e o formato do seu JSON. Veja [Como criar uma nova fonte](#como-criar-uma-nova-fonte).
 
-#### Visão geral
+**Stack:** Java 21, Spring Boot 4, MapStruct, Lombok, springdoc (Swagger) e Actuator.
+
+## Como subir a aplicação
+
+> A aplicação busca os filmes em `https://swapi.dev/api` ao iniciar, então precisa de acesso à internet. Se a SWAPI estiver fora do ar, a aplicação sobe mesmo assim, a lista de filmes fica vazia e o motivo aparece nos logs.
+
+### Com Docker
+
+Há dois Dockerfiles. Os dois geram a mesma aplicação, na porta 8080, rodando com um usuário sem root.
+
+| Você tem | Use | O que faz |
+|---|---|---|
+| Só o Docker | `Dockerfile.build` | Constrói o jar dentro do Docker; o primeiro build é mais lento, porque baixa as dependências |
+| Maven e JDK 21 | `Dockerfile` | Só empacota um jar já construído; o build da imagem é rápido |
+
+**Só com Docker:**
+
+```bash
+docker build -f Dockerfile.build -t desafio-swapi .
+docker run --rm -p 8080:8080 desafio-swapi
+```
+
+**Com Maven e JDK 21:**
+
+```bash
+mvn clean package -DskipTests
+docker build -t desafio-swapi .
+docker run --rm -p 8080:8080 desafio-swapi
+```
+
+No segundo caso o contexto do build contém só o jar (`Dockerfile.dockerignore`), então o `mvn package` precisa rodar antes do `docker build`.
+
+### Sem Docker
+
+```bash
+mvn spring-boot:run
+```
+
+### Conferindo que subiu
+
+```bash
+curl localhost:8080/actuator/health/readiness   # {"status":"UP"} quando a carga dos filmes terminou
+curl "localhost:8080/films"                     # primeira página de filmes
+```
+
+- Documentação interativa (Swagger): http://localhost:8080/swagger-ui.html
+- `GET /actuator/health/readiness` só fica `UP` depois que a carga dos filmes termina; `GET /actuator/health/liveness` indica que o processo está de pé.
+
+### Configuração
+
+Tudo fica em [application.properties](src/main/resources/application.properties), comentado. Qualquer propriedade pode ser trocada por variável de ambiente (`http-client.timeout` vira `HTTP_CLIENT_TIMEOUT`, e assim por diante):
+
+```bash
+docker run --rm -p 8080:8080 -e PAGINATION_DEFAULT_SIZE=5 -e HTTP_CLIENT_MAX_RETRIES=1 desafio-swapi
+```
+
+| Propriedade | Padrão | Para que serve |
+|---|---|---|
+| `pagination.default-page` | `0` | Página usada quando `page` não é informado |
+| `pagination.default-size` | `2` | Filmes por página quando `size` não é informado |
+| `pagination.max-size` | `100` | Maior `size` aceito; acima disso a API responde 400 |
+| `http-client.timeout` | `5s` | Tempo máximo de espera por uma resposta de uma fonte |
+| `http-client.max-retries` | `3` | Tentativas extras depois da primeira falha |
+| `http-client.retry-backoff` | `2s` | Espera entre as tentativas |
+| `sources.swapi.host` / `.resource` | `https://swapi.dev/api` / `/films` | Endereço da SWAPI |
+
+### Testes
+
+```bash
+mvn test
+```
+
+## Endpoints
+
+| Método | Path | Descrição |
+|---|---|---|
+| GET | `/films?page=&size=` | Lista paginada com `id`, `displayTitle` e `franchise` |
+| GET | `/films/{id}` | Detalhe do filme, incluindo `extras` |
+| PATCH | `/films/{id}` | Altera `title`, `releaseDate`, `synopsis`, `runtimeMinutes` e `director` |
+| GET | `/franchises` | Lista as franquias (`slug` e `name`) que têm filmes carregados |
+| GET | `/franchises/{slug}/films?page=&size=` | Lista paginada dos filmes da franquia |
+
+### Listar filmes
+
+```bash
+curl "localhost:8080/films?page=0&size=2"
+```
+
+```json
+{
+  "content": [
+    { "id": "star-wars-1", "displayTitle": "Episode I - The Phantom Menace", "franchise": "Star Wars" },
+    { "id": "star-wars-2", "displayTitle": "Episode II - Attack of the Clones", "franchise": "Star Wars" }
+  ],
+  "page": { "size": 2, "number": 0, "totalElements": 6, "totalPages": 3 }
+}
+```
+
+- `page` começa em 0, e `size` é a quantidade de filmes por página. Um filme nunca aparece em mais de uma página.
+- Uma página depois da última devolve `content` vazio.
+- `page` negativo, `size` menor que 1 ou acima do máximo devolve 400.
+- O `displayTitle` é derivado: `label - title` quando o filme tem `label`, senão só o `title`.
+
+### Detalhe de um filme
+
+```bash
+curl localhost:8080/films/star-wars-4
+```
+
+```json
+{
+  "id": "star-wars-4",
+  "title": "A New Hope",
+  "displayTitle": "Episode IV - A New Hope",
+  "franchise": "Star Wars",
+  "releaseDate": "1977-05-25",
+  "synopsis": null,
+  "runtimeMinutes": null,
+  "director": "George Lucas",
+  "extras": { "openingCrawl": "It is a period of civil war...", "producer": "Gary Kurtz, Rick McCallum" },
+  "source": "swapi",
+  "version": "1"
+}
+```
+
+`synopsis` e `runtimeMinutes` são `null` porque a SWAPI não os fornece; `extras` guarda o que é específico da fonte. Um id que não existe devolve 404:
+
+```json
+{ "detail": "Film not found: nope", "instance": "/films/nope", "status": 404, "title": "Not Found" }
+```
+
+### Editar parcialmente um filme
+
+```bash
+curl -X PATCH localhost:8080/films/star-wars-4 \
+  -H 'Content-Type: application/json' \
+  -d '{"runtimeMinutes": 121}'
+```
+
+Só os campos enviados mudam. A `version` é incrementada **somente** quando algo realmente mudou, então repetir a mesma requisição não altera a versão. `id`, `franchise`, `extras` e `source` não podem ser alterados.
+
+### Franquias
+
+```bash
+curl localhost:8080/franchises
+```
+
+```json
+[ { "slug": "star-wars", "name": "Star Wars" } ]
+```
+
+`GET /franchises/star-wars/films` devolve a página de filmes daquela franquia, com o mesmo formato e os mesmos parâmetros de paginação do `GET /films`. O slug não diferencia maiúsculas de minúsculas, e um slug que não existe devolve 404. O `slug` só aparece em `/franchises`, porque é o que vai na URL; nos filmes, `franchise` traz só o nome.
+
+## Estrutura da aplicação
+
+```
+com.akr.films
+├── controller   FilmController, FranchiseController, paginação, filtro de log
+├── service      FilmService, FranchiseService
+├── repository   interfaces por capacidade (FilmCreation, FilmFindable, FilmUpdatable, FranchiseFindable)
+│   └── memory   InMemoryFilmRepository
+├── ingestion    FilmSource, FilmDataLoader, HttpFetcher
+│   └── swapi    SwapiFilmSource, SwapiFilmParser, SwapiProperties
+├── mapper       MapStruct (entidade <-> respostas)
+├── domain       Film, Franchise, Identifier, páginas, respostas
+└── exception    exceções e tratamento de erros (ProblemDetail)
+```
+
+Os dados ficam em memória: são recarregados a cada inicialização.
+
+### Como a carga funciona
+
+Ao subir, o `FilmDataLoader` percorre todas as fontes (`FilmSource`) registradas e grava os filmes no repositório. Se uma fonte falhar, o erro é registrado e a carga segue para a próxima.
 
 ```mermaid
 flowchart LR
@@ -16,7 +184,7 @@ flowchart LR
     Source --> Repo[FilmCreation]
 ```
 
-#### Fonte SWAPI
+Para a SWAPI, a fonte usa o `HttpFetcher` (que aplica timeout e retry) para buscar o JSON e o `SwapiFilmParser` para convertê-lo em filmes:
 
 ```mermaid
 flowchart LR
@@ -27,7 +195,7 @@ flowchart LR
     Loader --> Repo[FilmCreation]
 ```
 
-#### Outra fonte (exemplo)
+Uma fonte nova segue o mesmo desenho, com a sua própria API, autenticação e parser:
 
 ```mermaid
 flowchart LR
@@ -37,8 +205,6 @@ flowchart LR
     Other --> Parser[OutraFilmParser]
     Loader --> Repo[FilmCreation]
 ```
-
-#### Sequência da carga
 
 ```mermaid
 sequenceDiagram
@@ -70,64 +236,65 @@ sequenceDiagram
 
 Cada fonte devolve `List<Film>` já preenchida com o que a sua API oferece:
 
-- `title`, `releaseDate` e, se existirem, `synopsis`, `runtimeMinutes` e `director`;
-- `franchise` (`Franchise(slug, name)`): a franquia do filme, como `star-wars` / "Star Wars". O `slug` vai na URL, então só aceita minúsculas, números e hífens;
-- `label`: rótulo opcional usado no nome de apresentação (na SWAPI, "Episode IV");
-- `extras`: `Map<String, String>` com dados específicos da fonte (na SWAPI, `openingCrawl` e `producer`);
-- `source` e `externalId`: de onde o filme veio e o seu identificador lá;
-- `id` (`Identifier`): definido pela própria fonte, no parser (na SWAPI, `star-wars-4` para o episódio IV).
+- `id` (`Identifier`): **obrigatório e único**, definido pela própria fonte no parser. Na SWAPI é `star-wars-<episódio>` (por exemplo, `star-wars-4`).
+- `title`, `releaseDate` e, se existirem, `synopsis`, `runtimeMinutes` e `director`.
+- `franchise` (`Franchise(slug, name)`): a franquia, como `star-wars` / "Star Wars". O `slug` vai na URL, então só aceita minúsculas, números e hífens.
+- `label`: rótulo opcional usado no nome de apresentação (na SWAPI, "Episode IV").
+- `extras`: `Map<String, String>` com dados específicos da fonte (na SWAPI, `openingCrawl` e `producer`).
+- `source` e `externalId`: de onde o filme veio e o seu identificador lá.
 
-Ao carregar, o `FilmDataLoader` não insere filme sem `id` nem com `id` já existente: ele é pulado, a carga segue e o problema aparece como `WARN` no log ao final da fonte.
+O `FilmDataLoader` não insere filme sem `id` nem com `id` já existente: o filme é pulado, a carga segue e o problema aparece como `WARN` no log ao final da fonte.
 
-## Endpoints
+### Como criar uma nova fonte
 
-| Método | Path | Descrição |
-|---|---|---|
-| GET | `/films?page=&size=` | Lista paginada com `id`, `displayTitle` (ex.: "Episode IV - A New Hope") e `franchise` (o nome) |
-| GET | `/films/{id}` | Detalhe do filme, incluindo `franchise` e `extras` |
-| PATCH | `/films/{id}` | Altera `title`, `releaseDate`, `synopsis`, `runtimeMinutes` e `director` |
-| GET | `/franchises` | Lista as franquias (`slug` e `name`) que têm filmes carregados |
-| GET | `/franchises/{slug}/films?page=&size=` | Lista paginada dos filmes da franquia (mesmo formato do `/films`) |
+Não é preciso registrar nada: o Spring encontra os componentes e o `FilmDataLoader` recebe todas as fontes. Exemplo para uma API fictícia:
 
-O `displayTitle` é derivado: `label - title` quando há `label`, senão só o `title`.
-A documentação interativa fica em `/swagger-ui.html`.
+1. **Propriedades**, em `ingestion/<nome>/`. O record é detectado sozinho:
 
-### Paginação
+   ```java
+   @ConfigurationProperties(prefix = "sources.fastfurious")
+   public record FastFuriousProperties(String host, String resource, String apiKey) {}
+   ```
 
-`GET /films` devolve uma página no formato:
+   ```properties
+   sources.fastfurious.host=https://api.exemplo.com
+   sources.fastfurious.resource=/movies
+   sources.fastfurious.api-key=${FF_API_KEY}
+   ```
 
-```json
-{
-  "content": [
-    { "id": "star-wars-1", "displayTitle": "Episode IV - A New Hope", "franchise": "Star Wars" },
-    { "id": "star-wars-2", "displayTitle": "Episode V - The Empire Strikes Back", "franchise": "Star Wars" }
-  ],
-  "page": { "size": 2, "number": 0, "totalElements": 6, "totalPages": 3 }
-}
-```
+2. **Parser** do JSON daquela API, que devolve `List<Film>` com o `id`, a `franchise` e o restante preenchidos.
 
-- `page` começa em 0 e `size` é a quantidade de filmes por página. Um filme nunca aparece em mais de uma página.
-- Uma página depois da última devolve `content` vazio.
-- `page` negativo, `size` menor que 1 ou acima do máximo devolve 400.
-- Os valores padrão ficam no `application.properties`:
+3. **A fonte**, uma classe `@Component` que implementa `FilmSource`. É no `WebClient` dela que entra a autenticação:
 
-```properties
-pagination.default-page=0
-pagination.default-size=2
-pagination.max-size=100
-```
+   ```java
+   @Component
+   public class FastFuriousFilmSource implements FilmSource {
 
-### Franquias
+       private final WebClient webClient;
+       private final FastFuriousProperties properties;
+       private final HttpFetcher httpFetcher;
+       private final FastFuriousFilmParser parser;
 
-`GET /franchises` devolve as franquias dos filmes carregados:
+       public FastFuriousFilmSource(FastFuriousProperties properties, HttpFetcher httpFetcher,
+               FastFuriousFilmParser parser) {
+           this.properties = properties;
+           this.httpFetcher = httpFetcher;
+           this.parser = parser;
+           this.webClient = WebClient.builder()
+                   .baseUrl(properties.host())
+                   .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.apiKey())
+                   .build();
+       }
 
-```json
-[ { "slug": "star-wars", "name": "Star Wars" } ]
-```
+       @Override
+       public List<Film> fetch() {
+           String json = httpFetcher.get(webClient, properties.resource()).block();
+           return parser.parse(json);
+       }
+   }
+   ```
 
-O `slug` só aparece em `/franchises`, porque é o que vai na URL. Nos filmes (`/films` e `/franchises/{slug}/films`) o campo `franchise` traz só o nome ("Star Wars").
-
-`GET /franchises/star-wars/films` devolve a página de `FilmSummary` daquela franquia, com o mesmo formato e os mesmos parâmetros de paginação do `GET /films`. O slug não diferencia maiúsculas de minúsculas. Um slug que não existe devolve 404. A franquia de um filme não pode ser alterada pelo `PATCH`.
+Os segredos devem vir de variável de ambiente, não do arquivo. O `HttpFetcher` é compartilhado e aplica timeout e retry, configurados em `http-client.*`. A `SwapiFilmSource` e o `SwapiFilmParser` são a referência completa.
 
 ## Logs (Grafana/Loki)
 
@@ -135,6 +302,8 @@ Por padrão o console mostra texto legível. Com o perfil `json`, cada log vira 
 
 ```bash
 mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=json
+# ou, no Docker:
+docker run --rm -p 8080:8080 -e SPRING_PROFILES_ACTIVE=json desafio-swapi
 ```
 
 Cada linha traz `@timestamp`, `level`, `message`, `logger_name`, `app` e:
@@ -153,13 +322,3 @@ Exemplos de consulta no Grafana (LogQL):
 ```
 
 Use poucos rótulos no Loki (por exemplo `app` e `level`) e deixe `filmId` e `requestId` no corpo do JSON: são valores de cardinalidade alta.
-
-### Adicionando uma nova fonte
-
-1. Criar o package `ingestion/<nome>/` com um `@ConfigurationProperties(prefix = "sources.<nome>")`.
-2. Criar o parser do JSON daquela API, que devolve `List<Film>`.
-3. Criar a classe `@Component` que implementa `FilmSource`, com o seu próprio `WebClient`
-   (é nele que entra a autenticação) e usando o `HttpFetcher` para a chamada.
-4. Configurar o host em `application.properties` (segredos via variável de ambiente).
-
-O `HttpFetcher` é compartilhado e aplica timeout e retry, configurados em `http-client.*`.
