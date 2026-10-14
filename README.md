@@ -50,7 +50,46 @@ curl "localhost:8080/films"                     # primeira página de filmes
 ```
 
 - Documentação interativa (Swagger): http://localhost:8080/swagger-ui.html
-- `GET /actuator/health/readiness` só fica `UP` depois que a carga dos filmes termina; `GET /actuator/health/liveness` indica que o processo está de pé.
+- `GET /actuator/health/readiness` só fica `UP` depois que a carga dos filmes termina; `GET /actuator/health/liveness` indica que o processo está de pé. Veja [No Kubernetes](#no-kubernetes).
+
+### No Kubernetes
+
+A aplicação só está pronta para receber requisições **depois que o `FilmDataLoader` termina a carga**. Enquanto ele roda, a porta HTTP já responde, mas o endpoint de readiness devolve 503; quem impede que o tráfego chegue ao pod nesse período é a `readinessProbe` do Kubernetes. Sem ela, o pod é considerado pronto assim que o contêiner inicia e recebe requisições com a lista ainda vazia.
+
+| Endpoint | Durante a carga | Depois da carga | Uso |
+|---|---|---|---|
+| `/actuator/health/readiness` | 503 (`OUT_OF_SERVICE`) | 200 (`UP`) | `readinessProbe`: define se o pod recebe tráfego |
+| `/actuator/health/liveness` | 200 (`UP`) | 200 (`UP`) | `livenessProbe`: define se o pod deve ser reiniciado |
+| `/actuator/health` | 503 | 200 | Visão geral; **não use como probe** |
+
+Exemplo de trecho de um Deployment:
+
+```yaml
+containers:
+  - name: desafio-swapi
+    image: desafio-swapi:latest
+    ports:
+      - containerPort: 8080
+    env:
+      - name: SPRING_PROFILES_ACTIVE      # logs em JSON para o Loki
+        value: json
+      - name: PAGINATION_DEFAULT_SIZE     # qualquer propriedade pode ser trocada por variável de ambiente
+        value: "10"
+    readinessProbe:
+      httpGet: { path: /actuator/health/readiness, port: 8080 }
+      periodSeconds: 5
+    livenessProbe:
+      httpGet: { path: /actuator/health/liveness, port: 8080 }
+      periodSeconds: 10
+```
+
+Pontos de atenção:
+
+- **Liveness separada da readiness.** O `/actuator/health` geral devolve 503 durante a carga; se ele fosse usado como liveness, o Kubernetes reiniciaria o pod em loop antes de a carga terminar.
+- **Carga demorada não exige ajuste.** Se a readiness falhar por muito tempo, o pod só continua fora do balanceamento; ele não é reiniciado.
+- **"Pronto" significa que a carga terminou, não que deu certo.** Se uma fonte estiver fora do ar na subida (por exemplo, a SWAPI), o erro vai para o log, o pod fica pronto e responde com lista vazia, e os dados só voltam com um reinício do pod. Essa é uma decisão de projeto; para exigir "pelo menos um filme carregado", seria preciso um indicador de saúde próprio no grupo `readiness`.
+- **Memória.** A imagem define `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=75`, então a JVM usa 75% do limite de memória do contêiner. Para mudar, sobrescreva essa variável no `env`.
+- **Só o tráfego via Service ou Ingress é bloqueado.** Quem chamar o IP do pod diretamente continua sendo atendido durante a carga.
 
 ### Configuração
 
