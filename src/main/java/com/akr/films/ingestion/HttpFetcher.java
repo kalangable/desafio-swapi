@@ -1,4 +1,4 @@
-package com.akr.films.source;
+package com.akr.films.ingestion;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;

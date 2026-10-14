@@ -1,4 +1,4 @@
-package com.akr.films.source.swapi;
+package com.akr.films.ingestion.swapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.akr.films.domain.Episode;
 import com.akr.films.domain.Film;
-import com.akr.films.source.HttpFetcher;
+import com.akr.films.ingestion.HttpFetcher;
 
 import reactor.core.publisher.Mono;
 

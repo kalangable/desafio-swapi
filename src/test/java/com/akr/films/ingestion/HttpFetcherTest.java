@@ -1,4 +1,4 @@
-package com.akr.films.source;
+package com.akr.films.ingestion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

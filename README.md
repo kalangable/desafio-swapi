@@ -68,7 +68,7 @@ sequenceDiagram
 
 ### Adicionando uma nova fonte
 
-1. Criar o package `source/<nome>/` com um `@ConfigurationProperties(prefix = "sources.<nome>")`.
+1. Criar o package `ingestion/<nome>/` com um `@ConfigurationProperties(prefix = "sources.<nome>")`.
 2. Criar o parser do JSON daquela API, que devolve `List<Film>`.
 3. Criar a classe `@Component` que implementa `FilmSource`, com o seu próprio `WebClient`
    (é nele que entra a autenticação) e usando o `HttpFetcher` para a chamada.

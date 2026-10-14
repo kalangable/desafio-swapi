@@ -1,4 +1,4 @@
-package com.akr.films.source.swapi;
+package com.akr.films.ingestion.swapi;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

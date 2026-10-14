@@ -1,4 +1,4 @@
-package com.akr.films.source.swapi;
+package com.akr.films.ingestion.swapi;
 
 import java.util.List;
 
@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.akr.films.domain.Film;
-import com.akr.films.source.HttpFetcher;
-import com.akr.films.source.FilmSource;
+import com.akr.films.ingestion.HttpFetcher;
+import com.akr.films.ingestion.FilmSource;
 
 @Component
 public class SwapiFilmSource implements FilmSource {

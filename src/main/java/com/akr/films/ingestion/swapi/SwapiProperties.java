@@ -1,4 +1,4 @@
-package com.akr.films.source.swapi;
+package com.akr.films.ingestion.swapi;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
