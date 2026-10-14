@@ -1,0 +1,31 @@
+# syntax=docker/dockerfile:1
+
+# Imagem da aplicação construindo o jar dentro do Docker (build em duas etapas).
+# Não precisa de Maven nem JDK na máquina, mas o build é mais lento, porque baixa as dependências.
+#
+# Como usar:
+#   1) Construir a imagem: docker build -f Dockerfile.build -t desafio-swapi .
+#   2) Executar:           docker run --rm -p 8080:8080 desafio-swapi
+#
+# Para a versão rápida, que só empacota um jar já construído, use o Dockerfile.
+
+# ---- Build ----
+FROM maven:3-eclipse-temurin-21 AS build
+WORKDIR /app
+
+COPY pom.xml ./
+RUN mvn -B -q dependency:go-offline
+
+COPY src ./src
+RUN mvn -B -q package -DskipTests
+
+# ---- Runtime ----
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+RUN useradd --system --no-create-home appuser
+COPY --from=build /app/target/*.jar app.jar
+USER appuser
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
