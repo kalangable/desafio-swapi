@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.akr.films.domain.Identifier;
 import com.akr.films.domain.Film;
+import com.akr.films.domain.Franchise;
 import com.akr.films.domain.Version;
 
 class FilmUpdateMapperTest {
@@ -17,6 +18,7 @@ class FilmUpdateMapperTest {
 
     private final Film current = Film.builder()
             .id(new Identifier("1"))
+            .franchise(new Franchise("star-wars", "Star Wars"))
             .title("A New Hope")
             .label("Episode IV")
             .releaseDate(LocalDate.of(1977, 5, 25))
@@ -65,12 +67,13 @@ class FilmUpdateMapperTest {
 
     @Test
     void shouldNeverChangeTheFieldsThatCannotBeEdited() {
-        Film changes = Film.builder().id(new Identifier("2")).label("Episode V").extras(Map.of("k", "v")).source("other")
+        Film changes = Film.builder().id(new Identifier("2")).franchise(new Franchise("other", "Other")).label("Episode V").extras(Map.of("k", "v")).source("other")
                 .externalId("other").version(new Version(9)).build();
 
         mapper.apply(changes, current);
 
         assertEquals(new Identifier("1"), current.getId());
+        assertEquals(new Franchise("star-wars", "Star Wars"), current.getFranchise());
         assertEquals("Episode IV", current.getLabel());
         assertEquals(Map.of("openingCrawl", "crawl"), current.getExtras());
         assertEquals("swapi", current.getSource());

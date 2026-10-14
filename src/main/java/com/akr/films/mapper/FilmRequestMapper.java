@@ -11,6 +11,7 @@ import com.akr.films.domain.Identifier;
 @Mapper(componentModel = "spring", uses = OptionalUnwrapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface FilmRequestMapper {
 
+    @Mapping(target = "franchise", ignore = true)
     @Mapping(target = "label", ignore = true)
     @Mapping(target = "extras", ignore = true)
     @Mapping(target = "source", ignore = true)

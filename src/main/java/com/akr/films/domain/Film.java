@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class Film {
 
     private Identifier id;
+    private Franchise franchise;
     private String title;
     private String label;
     private LocalDate releaseDate;

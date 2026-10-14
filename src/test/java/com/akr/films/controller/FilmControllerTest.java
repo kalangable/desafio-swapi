@@ -49,7 +49,7 @@ class FilmControllerTest {
     }
 
     private FilmDetail newHope(String synopsis, String version) {
-        return new FilmDetail("1", "A New Hope", "Episode IV - A New Hope", LocalDate.of(1977, 5, 25), synopsis,
+        return new FilmDetail("1", "A New Hope", "Episode IV - A New Hope", "Star Wars", LocalDate.of(1977, 5, 25), synopsis,
                 null, "George Lucas", Map.of("openingCrawl", "crawl"), "swapi", version);
     }
 
@@ -61,8 +61,8 @@ class FilmControllerTest {
     void shouldListTheDefaultPageWhenNoParameterIsInformed() {
         PageQuery query = new PageQuery(0, 2);
         when(service.findAll(query)).thenReturn(page(query, 3,
-                new FilmSummary("1", "Episode IV - A New Hope"),
-                new FilmSummary("2", "Episode V - The Empire Strikes Back")));
+                new FilmSummary("1", "Episode IV - A New Hope", "Star Wars"),
+                new FilmSummary("2", "Episode V - The Empire Strikes Back", "Star Wars")));
 
         client.get().uri("/films")
                 .exchange()
@@ -71,6 +71,7 @@ class FilmControllerTest {
                 .jsonPath("$.content.length()").isEqualTo(2)
                 .jsonPath("$.content[0].id").isEqualTo("1")
                 .jsonPath("$.content[0].displayTitle").isEqualTo("Episode IV - A New Hope")
+                .jsonPath("$.content[0].franchise").isEqualTo("Star Wars")
                 .jsonPath("$.content[1].displayTitle").isEqualTo("Episode V - The Empire Strikes Back")
                 .jsonPath("$.page.size").isEqualTo(2)
                 .jsonPath("$.page.number").isEqualTo(0)
@@ -81,7 +82,7 @@ class FilmControllerTest {
     @Test
     void shouldPassTheInformedPageAndSizeToTheService() {
         PageQuery query = new PageQuery(2, 5);
-        when(service.findAll(query)).thenReturn(page(query, 11, new FilmSummary("11", "Heat")));
+        when(service.findAll(query)).thenReturn(page(query, 11, new FilmSummary("11", "Heat", null)));
 
         client.get().uri("/films?page=2&size=5")
                 .exchange()
@@ -129,6 +130,7 @@ class FilmControllerTest {
                 .jsonPath("$.id").isEqualTo("1")
                 .jsonPath("$.title").isEqualTo("A New Hope")
                 .jsonPath("$.displayTitle").isEqualTo("Episode IV - A New Hope")
+                .jsonPath("$.franchise").isEqualTo("Star Wars")
                 .jsonPath("$.releaseDate").isEqualTo("1977-05-25")
                 .jsonPath("$.director").isEqualTo("George Lucas")
                 .jsonPath("$.extras.openingCrawl").isEqualTo("crawl")

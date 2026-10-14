@@ -53,6 +53,7 @@ class FilmRequestMapperTest {
         Film film = mapper.toFilm("1", new FilmRequestUpdate(Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty()));
 
+        assertNull(film.getFranchise());
         assertNull(film.getLabel());
         assertNull(film.getSource());
         assertNull(film.getExternalId());

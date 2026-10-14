@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.akr.films.domain.Film;
+import com.akr.films.domain.Franchise;
 import com.akr.films.domain.Identifier;
 import com.akr.films.util.RomanNumeral;
 
@@ -21,6 +22,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class SwapiFilmParser {
 
     private static final String SOURCE = "swapi";
+    private static final Franchise FRANCHISE = new Franchise("star-wars", "Star Wars");
 
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
@@ -33,6 +35,7 @@ public class SwapiFilmParser {
             int episode = film.path("episode_id").asInt();
             Film parsed = Film.builder()
                     .id(new Identifier("star-wars-" + episode))
+                    .franchise(FRANCHISE)
                     .title(film.path("title").asString())
                     .label("Episode " + RomanNumeral.toRoman(episode))
                     .releaseDate(LocalDate.parse(film.path("release_date").asString()))

@@ -11,6 +11,7 @@ import com.akr.films.domain.Film;
 public interface FilmUpdateMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "franchise", ignore = true)
     @Mapping(target = "label", ignore = true)
     @Mapping(target = "extras", ignore = true)
     @Mapping(target = "source", ignore = true)

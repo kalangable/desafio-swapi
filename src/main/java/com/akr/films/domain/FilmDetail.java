@@ -7,6 +7,7 @@ public record FilmDetail(
         String id,
         String title,
         String displayTitle,
+        String franchise,
         LocalDate releaseDate,
         String synopsis,
         Integer runtimeMinutes,

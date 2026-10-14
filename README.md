@@ -71,6 +71,7 @@ sequenceDiagram
 Cada fonte devolve `List<Film>` já preenchida com o que a sua API oferece:
 
 - `title`, `releaseDate` e, se existirem, `synopsis`, `runtimeMinutes` e `director`;
+- `franchise` (`Franchise(slug, name)`): a franquia do filme, como `star-wars` / "Star Wars". O `slug` vai na URL, então só aceita minúsculas, números e hífens;
 - `label`: rótulo opcional usado no nome de apresentação (na SWAPI, "Episode IV");
 - `extras`: `Map<String, String>` com dados específicos da fonte (na SWAPI, `openingCrawl` e `producer`);
 - `source` e `externalId`: de onde o filme veio e o seu identificador lá;
@@ -82,9 +83,11 @@ Ao carregar, o `FilmDataLoader` não insere filme sem `id` nem com `id` já exis
 
 | Método | Path | Descrição |
 |---|---|---|
-| GET | `/films?page=&size=` | Lista paginada com `id` e `displayTitle` (ex.: "Episode IV - A New Hope") |
-| GET | `/films/{id}` | Detalhe do filme, incluindo `extras` |
+| GET | `/films?page=&size=` | Lista paginada com `id`, `displayTitle` (ex.: "Episode IV - A New Hope") e `franchise` (o nome) |
+| GET | `/films/{id}` | Detalhe do filme, incluindo `franchise` e `extras` |
 | PATCH | `/films/{id}` | Altera `title`, `releaseDate`, `synopsis`, `runtimeMinutes` e `director` |
+| GET | `/franchises` | Lista as franquias (`slug` e `name`) que têm filmes carregados |
+| GET | `/franchises/{slug}/films?page=&size=` | Lista paginada dos filmes da franquia (mesmo formato do `/films`) |
 
 O `displayTitle` é derivado: `label - title` quando há `label`, senão só o `title`.
 A documentação interativa fica em `/swagger-ui.html`.
@@ -96,8 +99,8 @@ A documentação interativa fica em `/swagger-ui.html`.
 ```json
 {
   "content": [
-    { "id": "star-wars-1", "displayTitle": "Episode IV - A New Hope" },
-    { "id": "star-wars-2", "displayTitle": "Episode V - The Empire Strikes Back" }
+    { "id": "star-wars-1", "displayTitle": "Episode IV - A New Hope", "franchise": "Star Wars" },
+    { "id": "star-wars-2", "displayTitle": "Episode V - The Empire Strikes Back", "franchise": "Star Wars" }
   ],
   "page": { "size": 2, "number": 0, "totalElements": 6, "totalPages": 3 }
 }
@@ -113,6 +116,18 @@ pagination.default-page=0
 pagination.default-size=2
 pagination.max-size=100
 ```
+
+### Franquias
+
+`GET /franchises` devolve as franquias dos filmes carregados:
+
+```json
+[ { "slug": "star-wars", "name": "Star Wars" } ]
+```
+
+O `slug` só aparece em `/franchises`, porque é o que vai na URL. Nos filmes (`/films` e `/franchises/{slug}/films`) o campo `franchise` traz só o nome ("Star Wars").
+
+`GET /franchises/star-wars/films` devolve a página de `FilmSummary` daquela franquia, com o mesmo formato e os mesmos parâmetros de paginação do `GET /films`. O slug não diferencia maiúsculas de minúsculas. Um slug que não existe devolve 404. A franquia de um filme não pode ser alterada pelo `PATCH`.
 
 ### Adicionando uma nova fonte
 

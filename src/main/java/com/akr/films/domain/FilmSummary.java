@@ -1,4 +1,4 @@
 package com.akr.films.domain;
 
-public record FilmSummary(String id, String displayTitle) {
+public record FilmSummary(String id, String displayTitle, String franchise) {
 }

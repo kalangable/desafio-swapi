@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.akr.films.domain.Film;
+import com.akr.films.domain.Franchise;
 import com.akr.films.domain.Identifier;
 
 class SwapiFilmParserTest {
@@ -37,6 +38,7 @@ class SwapiFilmParserTest {
         List<Film> films = parser.parse(readFilmsJson());
 
         Film newHope = films.stream().filter(f -> f.getTitle().equals("A New Hope")).findFirst().orElseThrow();
+        assertEquals(new Franchise("star-wars", "Star Wars"), newHope.getFranchise());
         assertEquals("Episode IV", newHope.getLabel());
         assertEquals("Episode IV - A New Hope", newHope.getDisplayTitle());
         assertEquals("George Lucas", newHope.getDirector());

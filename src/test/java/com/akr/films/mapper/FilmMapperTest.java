@@ -11,6 +11,7 @@ import com.akr.films.domain.Identifier;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
+import com.akr.films.domain.Franchise;
 import com.akr.films.domain.Version;
 
 class FilmMapperTest {
@@ -19,6 +20,7 @@ class FilmMapperTest {
 
     private final Film film = Film.builder()
             .id(new Identifier("1"))
+            .franchise(new Franchise("star-wars", "Star Wars"))
             .title("A New Hope")
             .label("Episode IV")
             .releaseDate(LocalDate.of(1977, 5, 25))
@@ -33,12 +35,13 @@ class FilmMapperTest {
 
     @Test
     void shouldMapSummaryUsingIdAndDisplayTitle() {
-        assertEquals(new FilmSummary("1", "Episode IV - A New Hope"), mapper.toSummary(film));
+        assertEquals(new FilmSummary("1", "Episode IV - A New Hope", "Star Wars"), mapper.toSummary(film));
     }
 
     @Test
     void shouldMapDetailWithDisplayTitleExtrasAndVersionAsText() {
-        FilmDetail expected = new FilmDetail("1", "A New Hope", "Episode IV - A New Hope", LocalDate.of(1977, 5, 25),
+        FilmDetail expected = new FilmDetail("1", "A New Hope", "Episode IV - A New Hope", "Star Wars",
+                LocalDate.of(1977, 5, 25),
                 "synopsis", 121, "George Lucas", Map.of("openingCrawl", "crawl"), "swapi", "3");
         assertEquals(expected, mapper.toDetail(film));
     }

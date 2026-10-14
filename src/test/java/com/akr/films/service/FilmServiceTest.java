@@ -28,6 +28,7 @@ import com.akr.films.domain.PageResponse;
 import com.akr.films.domain.Film;
 import com.akr.films.domain.FilmDetail;
 import com.akr.films.domain.FilmSummary;
+import com.akr.films.domain.Franchise;
 import com.akr.films.domain.Version;
 import com.akr.films.exception.FilmNotFoundException;
 import com.akr.films.mapper.FilmMapperImpl;
@@ -55,6 +56,7 @@ class FilmServiceTest {
     private Film newHope() {
         return Film.builder()
                 .id(new Identifier("1"))
+                .franchise(new Franchise("star-wars", "Star Wars"))
                 .title("A New Hope")
                 .label("Episode IV")
                 .releaseDate(LocalDate.of(1977, 5, 25))
@@ -74,8 +76,8 @@ class FilmServiceTest {
         PageResponse<FilmSummary> page = service.findAll(query);
 
         assertEquals(List.of(
-                new FilmSummary("1", "Episode IV - A New Hope"),
-                new FilmSummary("2", "Heat")), page.content());
+                new FilmSummary("1", "Episode IV - A New Hope", "Star Wars"),
+                new FilmSummary("2", "Heat", null)), page.content());
         assertEquals(new PageInfo(2, 0, 5, 3), page.page());
     }
 

@@ -12,6 +12,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 import com.akr.films.domain.Film;
+import com.akr.films.domain.Franchise;
 import com.akr.films.domain.Identifier;
 import com.akr.films.domain.PageInfo;
 import com.akr.films.domain.PageQuery;
@@ -109,6 +110,64 @@ class InMemoryFilmRepositoryTest {
 
         assertTrue(page.content().isEmpty());
         assertEquals(new PageInfo(2, 0, 0, 0), page.page());
+    }
+
+    private static final Franchise STAR_WARS = new Franchise("star-wars", "Star Wars");
+
+    private static final Franchise FAST = new Franchise("fast-and-furious", "Fast & Furious");
+
+    private void insertFilm(String id, Franchise franchise) {
+        repository.insert(Film.builder().id(new Identifier(id)).franchise(franchise).title(id).build());
+    }
+
+    @Test
+    void shouldListTheDistinctFranchisesOrderedBySlug() {
+        insertFilm("star-wars-1", STAR_WARS);
+        insertFilm("fast-and-furious-1", FAST);
+        insertFilm("star-wars-2", STAR_WARS);
+        insertFilm("no-franchise-1", null);
+
+        assertEquals(List.of(FAST, STAR_WARS), repository.findAllFranchises());
+    }
+
+    @Test
+    void shouldReturnNoFranchisesWhenThereAreNoFilms() {
+        assertTrue(repository.findAllFranchises().isEmpty());
+    }
+
+    @Test
+    void shouldFindAFranchiseBySlugIgnoringCase() {
+        insertFilm("star-wars-1", STAR_WARS);
+
+        assertEquals(Optional.of(STAR_WARS), repository.findFranchiseBySlug("star-wars"));
+        assertEquals(Optional.of(STAR_WARS), repository.findFranchiseBySlug("STAR-WARS"));
+        assertTrue(repository.findFranchiseBySlug("fast-and-furious").isEmpty());
+    }
+
+    @Test
+    void shouldPageOnlyTheFilmsOfTheFranchise() {
+        insertFilm("star-wars-1", STAR_WARS);
+        insertFilm("star-wars-2", STAR_WARS);
+        insertFilm("star-wars-3", STAR_WARS);
+        insertFilm("fast-and-furious-1", FAST);
+        insertFilm("no-franchise-1", null);
+
+        PageResponse<Film> first = repository.findByFranchise("star-wars", new PageQuery(0, 2));
+        PageResponse<Film> second = repository.findByFranchise("star-wars", new PageQuery(1, 2));
+
+        assertEquals(List.of("star-wars-1", "star-wars-2"), ids(first));
+        assertEquals(List.of("star-wars-3"), ids(second));
+        assertEquals(new PageInfo(2, 0, 3, 2), first.page());
+    }
+
+    @Test
+    void shouldReturnAnEmptyPageForAFranchiseWithoutFilms() {
+        insertFilm("star-wars-1", STAR_WARS);
+
+        PageResponse<Film> page = repository.findByFranchise("fast-and-furious", new PageQuery(0, 2));
+
+        assertTrue(page.content().isEmpty());
+        assertEquals(0, page.page().totalElements());
     }
 
     @Test
