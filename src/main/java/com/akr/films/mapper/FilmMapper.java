@@ -13,6 +13,7 @@ import com.akr.films.domain.Identifier;
 @Mapper(componentModel = "spring")
 public interface FilmMapper {
 
+    @Mapping(target = "version", source = "version.version")
     FilmSummary toSummary(Film film);
 
     @Mapping(target = "version", source = "version.version")

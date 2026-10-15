@@ -76,8 +76,8 @@ class FilmServiceTest {
         PageResponse<FilmSummary> page = service.findAll(query);
 
         assertEquals(List.of(
-                new FilmSummary("1", "Episode IV - A New Hope", "Star Wars"),
-                new FilmSummary("2", "Heat", null)), page.content());
+                new FilmSummary("1", "Episode IV - A New Hope", "Star Wars", "1"),
+                new FilmSummary("2", "Heat", null, "1")), page.content());
         assertEquals(new PageInfo(2, 0, 5, 3), page.page());
     }
 
@@ -120,6 +120,18 @@ class FilmServiceTest {
         assertEquals("Episode IV - A New Hope", detail.displayTitle());
         assertEquals("new synopsis", detail.synopsis());
         assertEquals(121, detail.runtimeMinutes());
+        assertEquals("2", detail.version());
+    }
+
+    @Test
+    void shouldRemoveLineBreaksFromTheSynopsisWhenUpdating() {
+        when(repository.findById(new Identifier("1"))).thenReturn(Optional.of(newHope()));
+        when(updater.update(any(Film.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        FilmDetail detail = service.update(
+                Film.builder().id(new Identifier("1")).synopsis("first line\r\nsecond line\n\nthird").build());
+
+        assertEquals("first line second line third", detail.synopsis());
         assertEquals("2", detail.version());
     }
 

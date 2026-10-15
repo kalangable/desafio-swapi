@@ -13,6 +13,7 @@ import com.akr.films.mapper.FilmMapper;
 import com.akr.films.mapper.FilmUpdateMapper;
 import com.akr.films.repository.FilmFindable;
 import com.akr.films.repository.FilmUpdatable;
+import com.akr.films.util.TextNormalizer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,7 @@ public class FilmService {
         
         Film before = current.toBuilder().build();
 
+        changes.setSynopsis(TextNormalizer.singleLine(changes.getSynopsis()));
         updateMapper.apply(changes, current);
         if (current.equals(before)) {
             log.atDebug().addKeyValue("event", "film_unchanged").addKeyValue("filmId", current.getId().value())

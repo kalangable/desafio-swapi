@@ -12,6 +12,7 @@ import com.akr.films.domain.Film;
 import com.akr.films.domain.Franchise;
 import com.akr.films.domain.Identifier;
 import com.akr.films.util.RomanNumeral;
+import com.akr.films.util.TextNormalizer;
 
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.JsonNode;
@@ -30,13 +31,15 @@ public class SwapiFilmParser {
         List<Film> films = new ArrayList<>();
         for (JsonNode film : jsonMapper.readTree(json).path("results")) {
             Map<String, String> extras = new LinkedHashMap<>();
-            extras.put("openingCrawl", film.path("opening_crawl").asString());
+            String description = film.path("opening_crawl").asString();
+            extras.put("openingCrawl", description);
             extras.put("producer", film.path("producer").asString());
             int episode = film.path("episode_id").asInt();
             Film parsed = Film.builder()
                     .id(new Identifier("star-wars-" + episode))
                     .franchise(FRANCHISE)
                     .title(film.path("title").asString())
+                    .synopsis(TextNormalizer.singleLine(description))
                     .label("Episode " + RomanNumeral.toRoman(episode))
                     .releaseDate(LocalDate.parse(film.path("release_date").asString()))
                     .director(film.path("director").asString())

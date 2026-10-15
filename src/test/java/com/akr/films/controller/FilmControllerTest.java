@@ -61,8 +61,8 @@ class FilmControllerTest {
     void shouldListTheDefaultPageWhenNoParameterIsInformed() {
         PageQuery query = new PageQuery(0, 2);
         when(service.findAll(query)).thenReturn(page(query, 3,
-                new FilmSummary("1", "Episode IV - A New Hope", "Star Wars"),
-                new FilmSummary("2", "Episode V - The Empire Strikes Back", "Star Wars")));
+                new FilmSummary("1", "Episode IV - A New Hope", "Star Wars", "1"),
+                new FilmSummary("2", "Episode V - The Empire Strikes Back", "Star Wars", "1")));
 
         client.get().uri("/films")
                 .exchange()
@@ -72,6 +72,8 @@ class FilmControllerTest {
                 .jsonPath("$.content[0].id").isEqualTo("1")
                 .jsonPath("$.content[0].displayTitle").isEqualTo("Episode IV - A New Hope")
                 .jsonPath("$.content[0].franchise").isEqualTo("Star Wars")
+                .jsonPath("$.content[0].version").isEqualTo("1")
+                .jsonPath("$.content[1].version").isEqualTo("1")
                 .jsonPath("$.content[1].displayTitle").isEqualTo("Episode V - The Empire Strikes Back")
                 .jsonPath("$.page.size").isEqualTo(2)
                 .jsonPath("$.page.number").isEqualTo(0)
@@ -82,7 +84,7 @@ class FilmControllerTest {
     @Test
     void shouldPassTheInformedPageAndSizeToTheService() {
         PageQuery query = new PageQuery(2, 5);
-        when(service.findAll(query)).thenReturn(page(query, 11, new FilmSummary("11", "Heat", null)));
+        when(service.findAll(query)).thenReturn(page(query, 11, new FilmSummary("11", "Heat", null, "1")));
 
         client.get().uri("/films?page=2&size=5")
                 .exchange()

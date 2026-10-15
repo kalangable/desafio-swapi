@@ -46,9 +46,20 @@ class SwapiFilmParserTest {
         assertEquals("https://swapi.py4e.com/api/films/1/", newHope.getExternalId());
         assertEquals("Gary Kurtz, Rick McCallum", newHope.getExtras().get("producer"));
         assertTrue(newHope.getExtras().get("openingCrawl").startsWith("It is a period of civil war."));
-        assertNull(newHope.getSynopsis());
+        assertTrue(newHope.getSynopsis().startsWith("It is a period of civil war."));
         assertNull(newHope.getRuntimeMinutes());
         assertEquals(new Identifier("star-wars-4"), newHope.getId());
+    }
+
+    @Test
+    void shouldUseTheOpeningCrawlWithoutLineBreaksAsSynopsis() {
+        String json = "{\"results\":[{\"title\":\"x\",\"episode_id\":4,\"release_date\":\"1977-05-25\","
+                + "\"opening_crawl\":\"It is a period\\r\\nof civil war.\\r\\n\\r\\nRebel ships\\n\"}]}";
+
+        Film film = parser.parse(json).get(0);
+
+        assertEquals("It is a period of civil war. Rebel ships", film.getSynopsis());
+        assertEquals("It is a period\r\nof civil war.\r\n\r\nRebel ships\n", film.getExtras().get("openingCrawl"));
     }
 
     @Test

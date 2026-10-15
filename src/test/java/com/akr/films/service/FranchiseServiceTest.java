@@ -58,7 +58,7 @@ class FranchiseServiceTest {
 
         PageResponse<FilmSummary> page = service.findFilms("star-wars", query);
 
-        assertEquals(List.of(new FilmSummary("star-wars-4", "Episode IV - A New Hope", "Star Wars")), page.content());
+        assertEquals(List.of(new FilmSummary("star-wars-4", "Episode IV - A New Hope", "Star Wars", "1")), page.content());
         assertEquals(new PageInfo(2, 0, 1, 1), page.page());
     }
 

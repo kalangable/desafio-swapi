@@ -19,8 +19,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public interface FilmApi {
 
     @Operation(summary = "List all films",
-            description = "Returns one page with the id and the display title (for example, "
-                    + "\"Episode IV - A New Hope\") of the loaded films. A film never appears in more than one page. "
+            description = "Returns one page with the id, the display title (for example, "
+                    + "\"Episode IV - A New Hope\"), the franchise and the version of the loaded films. A film never appears in more than one page. "
                     + "The content is empty when there are no films or the page is past the last one.")
     @ApiResponse(responseCode = "200", description = "Page of films (possibly empty)",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
